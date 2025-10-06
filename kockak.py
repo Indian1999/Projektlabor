@@ -17,7 +17,6 @@ class Space:
         self.cubes[1].y += self.cubes[0].size
         self.cubes[1].z += self.cubes[0].size
         self.randomize()
-        self.delta = 0.001
 
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
@@ -26,12 +25,6 @@ class Space:
             cube.y = random.randint(0, cube[0].size)
             cube.z = random.randint(0, cube[0].size)
 
-    def fitness(self):
-        value = self.n    # n*n-es kockát biztos le tudunk fedni
-        
-        while self.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
-            value = value + self.delta
-        return value
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
         intervals.sort(key=lambda x:x[0]) # Az intervallum kezdete szerint rendezünk
@@ -129,12 +122,14 @@ class Space:
         return False
 
 class Genetic:
-    def __init__(self, n, population_size, generations, mutation_rate):
+    def __init__(self, n, population_size, generations, mutation_rate, accuracy = 3):
         self.n = n
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
-        self.population = [Space(n) for i in range(population_size)] 
+        self.population = [Space(n) for i in range(self.population_size)] 
+        self.accuracy = accuracy
+        self.delta = 10 ** -self.accuracy
 
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
@@ -146,18 +141,44 @@ class Genetic:
         mutated_cubes = []
         for cube in individual.cubes:
             if random.random() < self.mutation_rate:
-                cube.x += round(random.random(), 3)
+                cube.x += round(random.random(), self.accuracy)
                 cube.x = max(0, cube.x)
             if random.random() < self.mutation_rate:
-                cube.y += round(random.random(), 3)
+                cube.y += round(random.random(), self.accuracy)
                 cube.y = max(0, cube.y)
             if random.random() < self.mutation_rate:
-                cube.z += round(random.random(), 3)
+                cube.z += round(random.random(), self.accuracy)
                 cube.z = max(0, cube.z)
             mutated_cubes.append(cube)
         mutated = Space(self.n)
         mutated.cubes = mutated_cubes
         return mutated
+    
+    def fitness(self, individual):
+        value = individual.n    # n*n-es kockát biztos le tudunk fedni
+        
+        while individual.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
+            value = value + self.delta
+        return value
+
+    def selection(self, k = 5):
+        individuals = random.choices(self.population, k = k)
+        return max(individuals, key=self.fitness)
+    
+    def run(self):
+        for generation in range(self.generations):
+            best = self.population[0]
+            for individual in self.population:
+                if self.fitness(individual) > self.fitness(best):
+                    best = individual
+            print(f"Generation {generation}: The score of the best individual: {self.fitness(best)}")
+
+            new_population = [best]
+            while len(new_population) != self.population_size:
+                child = self.crossover(self.selection(), self.selection())
+                child = self.mutation(child)
+                new_population.append(child)
+            self.population = new_population
 
     
 def volume_sum(n:int) -> int:
@@ -169,10 +190,6 @@ def volume_sum(n:int) -> int:
     for i in range(1, n+1):
         total += i**3
     return total
-
-print([volume_sum(i) for i in range(5, 20)])
-
-
 
 def volumes_slided_big_cubes(n:int, overlap:float) -> tuple[float]:
     """
@@ -191,5 +208,3 @@ def volumes_slided_big_cubes(n:int, overlap:float) -> tuple[float]:
     missing_volume = new_big_cube_volume - occupied_volume
     remaining_total = volume_sum(n-2)
     return (occupied_volume, missing_volume, remaining_total)
-
-print(volumes_slided_big_cubes(5, 3))
