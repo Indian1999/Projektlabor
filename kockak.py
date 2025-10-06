@@ -48,9 +48,19 @@ class Space:
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
         for cube in self.cubes[2:]:
-            cube.x = random.randint(self.n - cube.size, self.cubes[0].size)
-            cube.y = random.randint(self.n - cube.size, self.cubes[0].size)
-            cube.z = random.randint(self.n - cube.size, self.cubes[0].size)
+            random_path = random.randint(1,3)
+            if random_path == 1:
+                cube.x = 0
+                cube.y = random.randint(self.n - cube.size, self.cubes[0].size)
+                cube.z = random.randint(self.n - cube.size, self.cubes[0].size)
+            elif random_path == 2:
+                cube.x = random.randint(self.n - cube.size, self.cubes[0].size)
+                cube.y = 0
+                cube.z = random.randint(self.n - cube.size, self.cubes[0].size)
+            else:
+                cube.x = random.randint(self.n - cube.size, self.cubes[0].size)
+                cube.y = random.randint(self.n - cube.size, self.cubes[0].size)
+                cube.z = 0
 
     def plot_space(self, path = "default.png", gen = 0):
         fig = plt.figure()
@@ -268,7 +278,7 @@ class Genetic:
         for cube in individual.cubes[1:]:
             if individual.is_cube_within_base_cube(cube):
                 return -1 # Ha legalább egy kocka értelmetlen, büntetünk
-            if not individual.has_cubes_on_all_zeros():
+            if not individual.has_two_cubes_on_all_zeros():
                 return -1 # Ha nincsen minden 0-s koordináta lefedve, büntetünk
             
         value = individual.n    # n*n-es kockát biztos le tudunk fedni     
