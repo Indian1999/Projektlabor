@@ -181,23 +181,26 @@ class Space:
                 return True
         return False
 
-    def monte_carlo_filled_ratio(self, goal_size, sample_size = 5000):
+    def monte_carlo_filled_ratio(self, goal_size, sample_size = 1000):
         counter = 0
         random_path = random.randint(1, 3)
-        points = None
+        points = np.zeros((sample_size*3, 3))
         restricted = np.random.uniform(self.n, np.nextafter(goal_size, float("inf")), sample_size)
         whole1 = np.random.uniform(0, np.nextafter(goal_size, float("inf")), sample_size)
         whole2 = np.random.uniform(0, np.nextafter(goal_size, float("inf")), sample_size)
-        if random_path == 1:
-            points = np.column_stack((restricted,whole1,whole2))
-        elif random_path == 2:
-            points = np.column_stack((whole1,restricted,whole2))
-        else:
-            points = np.column_stack((whole1,whole2,restricted))
+        points[:sample_size, 0] = restricted
+        points[:sample_size, 1] = whole1
+        points[:sample_size, 2] = whole2
+        points[sample_size:2*sample_size, 0] = whole1
+        points[sample_size:2*sample_size, 1] = restricted
+        points[sample_size:2*sample_size, 2] = whole2
+        points[2*sample_size:, 0] = whole1
+        points[2*sample_size:, 1] = whole2
+        points[2*sample_size:, 2] = restricted
         for point in points:
             if self.is_part_of_a_cube(point):
                 counter += 1
-        return counter / sample_size
+        return counter / (sample_size * 3)
 
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
@@ -270,7 +273,7 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(n=12, population_size=50,  generations=2000, mutation_rate=0.1, accuracy=1)
+genetic = Genetic(n=20, population_size=50,  generations=2000, mutation_rate=0.1, accuracy=1)
 genetic.run()
 
 def volume_sum(n:int) -> int:
