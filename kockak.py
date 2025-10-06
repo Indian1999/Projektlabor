@@ -42,6 +42,7 @@ class Space:
         self.cubes[1].y += self.cubes[0].size
         self.cubes[1].z += self.cubes[0].size
         self.randomize()
+        self.fitness = 0
 
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
@@ -219,19 +220,22 @@ class Genetic:
             for z in np.linspace(0, goal, bins):
                 if individual.is_part_of_a_cube((goal, y, z)):
                     total += 1
-        return value * 100 + total # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
+        percentage = round(total / (3 * bins**2) * 100, 2)
+        return value * 1000 + percentage # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
     def selection(self, k = 5):
         individuals = random.choices(self.population, k = k)
-        return max(individuals, key=self.fitness)
+        return max(individuals, key=lambda x: x.fitness)
     
     def run(self):
         for generation in range(self.generations):
             best = self.population[0]
-            for individual in self.population:
-                if self.fitness(individual) > self.fitness(best):
+            best.fitness = self.fitness(best)
+            for individual in self.population[1:]:
+                individual.fitness = self.fitness(individual)
+                if individual.fitness > best.fitness:
                     best = individual
-            print(f"Generation {generation}: The score of the best individual: {self.fitness(best)}")
+            print(f"Generation {generation}: The score of the best individual: {best.fitness}")
             if generation % 10 == 0:
                 best.plot_space(f"plots/{generation}_gen_best.png", generation)
 
