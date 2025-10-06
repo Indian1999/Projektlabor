@@ -14,6 +14,30 @@ class Space:
     def fitness(self):
         value = self.n    # n*n-es kockát biztos le tudunk fedni
 
+
+    def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
+        intervals.sort(key=lambda x:x[0]) # Az intervallum kezdete szerint rendezünk
+        union = [intervals[0]]
+        for start, end in intervals[1:]:
+            u_start, u_end = union[-1]
+            if start <= u_end:
+                union[-1] = (u_start, max(u_end, end))
+            else:
+                union.append((start, end))
+        return union
+    
+    def interval_contains(self, value:list[tuple[float]], other: tuple[float]) -> bool:
+        """checks if value contains the other"""
+        o_start, o_end = other
+        for start, end in value:
+            if start <= o_start and end >= o_end:
+                return True
+            if start <= o_start and o_start <= end:
+                o_start = end
+            if o_start >= o_end:
+                return True
+        return False 
+
     def planes_part_of_cube(self, point: tuple[int])-> bool:
         """
             A point in the spaces defines 3 planes, 
@@ -22,7 +46,38 @@ class Space:
                 The third where we lock the z axis.
             This method finds out if all the points that are elements of these planes are part of at least one cube
         """
-
+        x,y,z = point
+        cubes_x = self.get_cubes_on_plane(x, "x")
+        intervals_x_y = self.get_cube_intervals(cubes_x, "x", "y")
+        intervals_x_z = self.get_cube_intervals(cubes_x, "x", "z")
+        cubes_y = self.get_cubes_on_plane(y, "y")
+        intervals_y_x = self.get_cube_intervals(cubes_y, "y", "x")
+        intervals_y_z = self.get_cube_intervals(cubes_y, "y", "z")
+        cubes_z = self.get_cubes_on_plane(z, "z")
+        intervals_z_y = self.get_cube_intervals(cubes_z, "z", "y")
+        intervals_z_x = self.get_cube_intervals(cubes_z, "z", "x")
+        if self.interval_contains(intervals_x_y, (0, z)):
+            if self.interval_contains(intervals_x_z, (0, y)):
+                if self.interval_contains(intervals_y_x, (0, z)):
+                    if self.interval_contains(intervals_y_z, (0, x)):
+                        if self.interval_contains(intervals_z_x, (0, y)):
+                            if self.interval_contains(intervals_z_y, (0, x)):
+                                return True
+        return False
+            
+    def get_cube_intervals(self, cubes:list[Cube], axis1="x", axis2="y") -> list[tuple[float]]:
+        intervals = []
+        if "z" not in axis1 + axis2:
+            for cube in cubes:
+                intervals.append((cube.z, cube.z + cube.size))
+        if "y" not in axis1 + axis2:
+            for cube in cubes:
+                intervals.append((cube.y, cube.y + cube.size))
+        if "x" not in axis1 + axis2:
+            for cube in cubes:
+                intervals.append((cube.x, cube.x + cube.size))
+        return intervals
+    
     def get_cubes_on_plane(self, value:float, axis:str = "x") -> list[Cube]:
         """
             Args: 
