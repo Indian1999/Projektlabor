@@ -21,9 +21,9 @@ class Space:
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
         for cube in self.cubes[2:]:
-            cube.x = random.randint(0, cube[0].size)
-            cube.y = random.randint(0, cube[0].size)
-            cube.z = random.randint(0, cube[0].size)
+            cube.x = random.randint(0, self.cubes[0].size)
+            cube.y = random.randint(0, self.cubes[0].size)
+            cube.z = random.randint(0, self.cubes[0].size)
 
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
@@ -122,7 +122,7 @@ class Space:
         return False
 
 class Genetic:
-    def __init__(self, n, population_size, generations, mutation_rate, accuracy = 3):
+    def __init__(self, n, population_size = 1000, generations = 1000, mutation_rate = 0.1, accuracy = 3):
         self.n = n
         self.population_size = population_size
         self.generations = generations
@@ -134,7 +134,7 @@ class Genetic:
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
         child = Space(self.n)
-        child.cubes = individual1.cubes[:index] + individual2[index:]
+        child.cubes = individual1.cubes[:index] + individual2.cubes[index:]
         return child
     
     def mutation(self, individual):
@@ -180,7 +180,10 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-    
+genetic = Genetic(10)
+genetic.run()
+
+
 def volume_sum(n:int) -> int:
     """
         Returns the sum of the volumes of n cubes, each cube has a sidelength of 1, 2, 3, ... n
