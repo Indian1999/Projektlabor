@@ -1,5 +1,6 @@
 import random
 import matplotlib.pyplot as plt
+import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Cube:
@@ -45,9 +46,9 @@ class Space:
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
         for cube in self.cubes[2:]:
-            cube.x = random.randint(0, self.cubes[0].size)
-            cube.y = random.randint(0, self.cubes[0].size)
-            cube.z = random.randint(0, self.cubes[0].size)
+            cube.x = random.randint(self.n - cube.size, self.cubes[0].size)
+            cube.y = random.randint(self.n - cube.size, self.cubes[0].size)
+            cube.z = random.randint(self.n - cube.size, self.cubes[0].size)
 
     def plot_space(self, path = "default.png", gen = 0):
         fig = plt.figure()
@@ -157,13 +158,13 @@ class Space:
 
     def is_part_of_a_cube(self, point: tuple[int]) -> bool:
         x,y,z = point
-        for cube in self.subes:
+        for cube in self.cubes:
             if x >= cube.x and x <= cube.x + cube.size and y >= cube.y and y <= cube.y + cube.size and z >= cube.z and z <= cube.z + cube.size:
                 return True
         return False
 
 class Genetic:
-    def __init__(self, n, population_size = 100, generations = 10000, mutation_rate = 0.1, accuracy = 3):
+    def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
         self.n = n
         self.population_size = population_size
         self.generations = generations
@@ -203,7 +204,22 @@ class Genetic:
         
         while individual.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
             value = value + self.delta
-        return value
+        total = 0
+        goal = value + self.delta
+        bins = int(round(goal/self.delta))
+        for x in np.linspace(0, goal, bins):
+            for y in np.linspace(0, goal, bins):
+                if individual.is_part_of_a_cube((x, y, goal)):
+                    total += 1
+        for x in np.linspace(0, goal, bins):
+            for z in np.linspace(0, goal, bins):
+                if individual.is_part_of_a_cube((x, goal, z)):
+                    total += 1
+        for y in np.linspace(0, goal, bins):
+            for z in np.linspace(0, goal, bins):
+                if individual.is_part_of_a_cube((goal, y, z)):
+                    total += 1
+        return value * 100 + total # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
     def selection(self, k = 5):
         individuals = random.choices(self.population, k = k)
@@ -226,7 +242,7 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(n=20, population_size=100,  generations=1000, mutation_rate=0.1, accuracy=3)
+genetic = Genetic(n=12, population_size=50,  generations=2000, mutation_rate=0.1, accuracy=1)
 genetic.run()
 
 def volume_sum(n:int) -> int:
