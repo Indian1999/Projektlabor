@@ -14,6 +14,11 @@ class Cube:
         self.set_vertices()
         self.set_faces()
 
+    def set_position(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
     def set_vertices(self):
         self.vertices = []
         deltas = [0, self.size]
@@ -35,16 +40,41 @@ class Cube:
 
 class Space:
     def __init__(self, n, accuracy):
+        if n < 8:
+            raise ValueError("There has to be at least 8 cubes!")
         self.n = n
         self.accuracy = accuracy
         self.delta = 10**-accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
-        self.cubes[1].x += 1
-        self.cubes[1].y += 1
-        self.cubes[1].z += 1
-        self.randomize()
+        self.setup()
         self.fitness = 0
+
+    def setup(self, reach = 1):
+        cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1)]
+        for i in range(1, len(cruical_points)):
+            cube = self.cubes[i]
+            offset = self.n - cube.size + reach
+            position = (cruical_points[i][0]*offset, cruical_points[i][1]*offset, cruical_points[i][2]*offset)
+            cube.set_position(*position)
+        for i in range(len(cruical_points), self.n):
+            cube = self.cubes[i]
+            random_path = random.randint(1,4)
+            if random_path == 1:
+                cube.x = 0
+                cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+            elif random_path == 2:
+                cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                cube.y = 0
+                cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+            elif random_path == 3:
+                cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                cube.z = 0
+
+
+
 
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
@@ -70,12 +100,12 @@ class Space:
     def plot_space(self, path = "default.png", gen = 0):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        cube = self.cubes[0]
-        cube.set_faces()
-        ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="red", edgecolors="black", alpha=0.7))
         for cube in self.cubes[1:]:
             cube.set_faces()
             ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="cyan", edgecolors="black", alpha=0.5))
+        cube = self.cubes[0]
+        cube.set_faces()
+        ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="red", edgecolors="black", alpha=0.7))
         ax.set_xlim(0, self.n*2)
         ax.set_ylim(0, self.n*2)
         ax.set_zlim(0, self.n*2)
