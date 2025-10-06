@@ -51,12 +51,13 @@ class Space:
         self.fitness = 0
 
     def setup(self, reach = 1):
-        cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1)]
+        cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1), (0, 1, 0.5), (1, 0, 0.5), (0, 0.5, 1), (1, 0.5, 0), (0.5, 0, 1), (0.5, 1, 0)] # 13 crucial points in total
         for i in range(1, len(cruical_points)):
             cube = self.cubes[i]
             offset = self.n - cube.size + reach
             position = (cruical_points[i][0]*offset, cruical_points[i][1]*offset, cruical_points[i][2]*offset)
             cube.set_position(*position)
+        
         for i in range(len(cruical_points), self.n):
             cube = self.cubes[i]
             random_path = random.randint(1,4)
@@ -72,9 +73,6 @@ class Space:
                 cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
                 cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
                 cube.z = 0
-
-
-
 
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
