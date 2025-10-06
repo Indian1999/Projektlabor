@@ -10,10 +10,18 @@ class Space:
     def __init__(self, n):
         self.n = n
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
+        # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
+        self.cubes[1].x += self.cubes[0].size
+        self.cubes[1].y += self.cubes[0].size
+        self.cubes[1].z += self.cubes[0].size
+        self.delta = 0.001
 
     def fitness(self):
         value = self.n    # n*n-es kockát biztos le tudunk fedni
-
+        
+        while self.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
+            value = value + self.delta
+        return value
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
         intervals.sort(key=lambda x:x[0]) # Az intervallum kezdete szerint rendezünk
