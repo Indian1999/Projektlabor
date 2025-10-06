@@ -180,6 +180,29 @@ class Space:
             if x >= cube.x and x <= cube.x + cube.size and y >= cube.y and y <= cube.y + cube.size and z >= cube.z and z <= cube.z + cube.size:
                 return True
         return False
+    
+    def is_cube_within_base_cube(self, cube: Cube) -> bool:
+        if cube.x >= 0 and cube.x + cube.size <= self.n:
+            if cube.y >= 0 and cube.y + cube.size <= self.n:
+                if cube.z >= 0 and cube.z + cube.size <= self.n:
+                    return True
+        return False
+
+    def has_two_cubes_on_all_zeros(self):
+        """
+        Determines wheter the space has at least one non-base cube on each of the 0 coordinates
+        """
+        x_0, y_0, z_0 = 0, 0, 0
+        for cube in self.cubes[1:]:
+            if cube.x == 0:
+                x_0 += 1
+            if cube.y == 0:
+                y_0 += 1
+            if cube.z == 0:
+                z_0 += 1
+            if x_0 >= 2 and y_0 >= 2 and z_0 >= 2:
+                return True
+        return False
 
     def monte_carlo_filled_ratio(self, goal_size, sample_size = 1000):
         counter = 0
@@ -223,8 +246,8 @@ class Genetic:
         for cube in individual.cubes[1:]:
             if random.random() < self.mutation_rate:
                 cube.x += round(random.random()-0.5, self.accuracy)
-                cube.x = max(0, cube.x)
-                cube.x = min(self.n, cube.x)
+                cube.x = max(0, cube.x) 
+                cube.x = min(self.n, cube.x) #Semmi értelme ha nem ér hozzá a base kockához
             if random.random() < self.mutation_rate:
                 cube.y += round(random.random()-0.5, self.accuracy)
                 cube.y = max(0, cube.y)
@@ -242,8 +265,13 @@ class Genetic:
         return mutated
     
     def fitness(self, individual):
-        value = individual.n    # n*n-es kockát biztos le tudunk fedni
-        
+        for cube in individual.cubes[1:]:
+            if individual.is_cube_within_base_cube(cube):
+                return -1 # Ha legalább egy kocka értelmetlen, büntetünk
+            if not individual.has_cubes_on_all_zeros():
+                return -1 # Ha nincsen minden 0-s koordináta lefedve, büntetünk
+            
+        value = individual.n    # n*n-es kockát biztos le tudunk fedni     
         while individual.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
             value = value + self.delta
         ratio = individual.monte_carlo_filled_ratio(value + self.delta)
