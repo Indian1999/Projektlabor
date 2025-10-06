@@ -1,6 +1,8 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+from copy import deepcopy
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Cube:
@@ -31,11 +33,10 @@ class Cube:
         [self.vertices[j] for j in [1,3,7,5]]
     ]
 
-
-
 class Space:
-    def __init__(self, n):
+    def __init__(self, n, accuracy):
         self.n = n
+        self.accuracy = accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
         self.cubes[1].x += self.cubes[0].size
@@ -68,6 +69,22 @@ class Space:
         plt.savefig(path)
         plt.close()
 
+    def to_json(self):
+        root = {}
+        root["cubes"] = []
+        for cube in self.cubes:
+            cubeDict = {}
+            cubeDict["size"] = cube.size
+            cubeDict["x"] = cube.x
+            cubeDict["y"] = cube.y
+            cubeDict["z"] = cube.z
+            root["cubes"].append(cubeDict)
+        return root
+
+    def print_space(self, path = "default.json", gen = 0):
+        payload = self.to_json()
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=4, ensure_ascii=True)
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
         intervals.sort(key=lambda x:x[0]) # Az intervallum kezdete szerint rendezünk
@@ -167,21 +184,21 @@ class Space:
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
         self.n = n
+        self.accuracy = accuracy
+        self.delta = 10 ** -self.accuracy
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
-        self.population = [Space(n) for i in range(self.population_size)] 
-        self.accuracy = accuracy
-        self.delta = 10 ** -self.accuracy
+        self.population = [Space(n, self.accuracy) for i in range(self.population_size)] 
 
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
-        child = Space(self.n)
+        child = Space(self.n, self.accuracy)
         child.cubes = individual1.cubes[:index] + individual2.cubes[index:]
         return child
     
     def mutation(self, individual):
-        mutated_cubes = []
+        mutated_cubes = [individual.cubes[0]]
         for cube in individual.cubes[1:]:
             if random.random() < self.mutation_rate:
                 cube.x += round(random.random()-0.5, self.accuracy)
@@ -195,8 +212,11 @@ class Genetic:
                 cube.z += round(random.random()-0.5, self.accuracy)
                 cube.z = max(0, cube.z)
                 cube.z = min(self.n, cube.z)
+            cube.x = round(cube.x, self.accuracy) # Ha ez nincs, akkor a floatok nem megfelelő értéken lesznek
+            cube.y = round(cube.y, self.accuracy)
+            cube.z = round(cube.z, self.accuracy)
             mutated_cubes.append(cube)
-        mutated = Space(self.n)
+        mutated = Space(self.n, self.accuracy)
         mutated.cubes = mutated_cubes
         return mutated
     
@@ -220,8 +240,8 @@ class Genetic:
             for z in np.linspace(0, goal, bins):
                 if individual.is_part_of_a_cube((goal, y, z)):
                     total += 1
-        percentage = round(total / (3 * bins**2) * 100, 2)
-        return value * 1000 + percentage # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
+        ratio = round(total / (3 * bins**2), 4)
+        return value * 1000 + ratio # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
     def selection(self, k = 5):
         individuals = random.choices(self.population, k = k)
@@ -238,8 +258,9 @@ class Genetic:
             print(f"Generation {generation}: The score of the best individual: {best.fitness}")
             if generation % 10 == 0:
                 best.plot_space(f"plots/{generation}_gen_best.png", generation)
+                best.print_space(f"spaces/{generation}_gen_best.json", generation)
 
-            new_population = [best]
+            new_population = [deepcopy(best)]
             while len(new_population) != self.population_size:
                 child = self.crossover(self.selection(), self.selection())
                 child = self.mutation(child)
