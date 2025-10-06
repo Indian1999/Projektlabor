@@ -1,4 +1,6 @@
 import random
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Cube:
     def __init__(self, size, x = 0, y = 0, z = 0):
@@ -6,6 +8,28 @@ class Cube:
         self.x = x
         self.y = y
         self.z = z
+        self.set_vertices()
+        self.set_faces()
+
+    def set_vertices(self):
+        self.vertices = []
+        deltas = [0, self.size]
+        for i in deltas:
+            for j in deltas:
+                for k in deltas:
+                    self.vertices.append((self.x + i, self.y + j, self.z + k))
+
+    def set_faces(self):
+        self.set_vertices()
+        self.faces = [
+        [self.vertices[j] for j in [0,1,3,2]],
+        [self.vertices[j] for j in [4,5,7,6]],
+        [self.vertices[j] for j in [0,1,5,4]],
+        [self.vertices[j] for j in [2,3,7,6]],
+        [self.vertices[j] for j in [0,2,6,4]],
+        [self.vertices[j] for j in [1,3,7,5]]
+    ]
+
 
 
 class Space:
@@ -24,6 +48,23 @@ class Space:
             cube.x = random.randint(0, self.cubes[0].size)
             cube.y = random.randint(0, self.cubes[0].size)
             cube.z = random.randint(0, self.cubes[0].size)
+
+    def plot_space(self, path = "default.png", gen = 0):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        for cube in self.cubes:
+            cube.set_faces()
+            ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="cyan", edgecolors="black", alpha=0.5))
+        ax.set_xlim(0, self.n*2)
+        ax.set_ylim(0, self.n*2)
+        ax.set_zlim(0, self.n*2)
+        ticks = [i for i in range(0, self.n*2 + 1, 2)]
+        ax.set_xticks(ticks)
+        ax.set_yticks(ticks)
+        ax.set_zticks(ticks)
+        plt.title(f"Generation {gen}")
+        plt.savefig(path)
+        plt.close()
 
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
@@ -122,7 +163,7 @@ class Space:
         return False
 
 class Genetic:
-    def __init__(self, n, population_size = 1000, generations = 1000, mutation_rate = 0.1, accuracy = 3):
+    def __init__(self, n, population_size = 100, generations = 10000, mutation_rate = 0.1, accuracy = 3):
         self.n = n
         self.population_size = population_size
         self.generations = generations
@@ -139,16 +180,19 @@ class Genetic:
     
     def mutation(self, individual):
         mutated_cubes = []
-        for cube in individual.cubes:
+        for cube in individual.cubes[1:]:
             if random.random() < self.mutation_rate:
-                cube.x += round(random.random(), self.accuracy)
+                cube.x += round(random.random()-0.5, self.accuracy)
                 cube.x = max(0, cube.x)
+                cube.x = min(self.n, cube.x)
             if random.random() < self.mutation_rate:
-                cube.y += round(random.random(), self.accuracy)
+                cube.y += round(random.random()-0.5, self.accuracy)
                 cube.y = max(0, cube.y)
+                cube.y = min(self.n, cube.y)
             if random.random() < self.mutation_rate:
-                cube.z += round(random.random(), self.accuracy)
+                cube.z += round(random.random()-0.5, self.accuracy)
                 cube.z = max(0, cube.z)
+                cube.z = min(self.n, cube.z)
             mutated_cubes.append(cube)
         mutated = Space(self.n)
         mutated.cubes = mutated_cubes
@@ -172,6 +216,8 @@ class Genetic:
                 if self.fitness(individual) > self.fitness(best):
                     best = individual
             print(f"Generation {generation}: The score of the best individual: {self.fitness(best)}")
+            if generation % 10 == 0:
+                best.plot_space(f"plots/{generation}_gen_best.png", generation)
 
             new_population = [best]
             while len(new_population) != self.population_size:
@@ -180,9 +226,8 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(10)
+genetic = Genetic(n=20, population_size=100,  generations=1000, mutation_rate=0.1, accuracy=3)
 genetic.run()
-
 
 def volume_sum(n:int) -> int:
     """
