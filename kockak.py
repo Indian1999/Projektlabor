@@ -181,6 +181,24 @@ class Space:
                 return True
         return False
 
+    def monte_carlo_filled_ratio(self, goal_size, sample_size = 5000):
+        counter = 0
+        random_path = random.randint(1, 3)
+        points = None
+        restricted = np.random.uniform(self.n, np.nextafter(goal_size, float("inf")), sample_size)
+        whole1 = np.random.uniform(0, np.nextafter(goal_size, float("inf")), sample_size)
+        whole2 = np.random.uniform(0, np.nextafter(goal_size, float("inf")), sample_size)
+        if random_path == 1:
+            points = np.column_stack((restricted,whole1,whole2))
+        elif random_path == 2:
+            points = np.column_stack((whole1,restricted,whole2))
+        else:
+            points = np.column_stack((whole1,whole2,restricted))
+        for point in points:
+            if self.is_part_of_a_cube(point):
+                counter += 1
+        return counter / sample_size
+
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
         self.n = n
@@ -225,22 +243,7 @@ class Genetic:
         
         while individual.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
             value = value + self.delta
-        total = 0
-        goal = value + self.delta
-        bins = int(round(goal/self.delta))
-        for x in np.linspace(0, goal, bins):
-            for y in np.linspace(0, goal, bins):
-                if individual.is_part_of_a_cube((x, y, goal)):
-                    total += 1
-        for x in np.linspace(0, goal, bins):
-            for z in np.linspace(0, goal, bins):
-                if individual.is_part_of_a_cube((x, goal, z)):
-                    total += 1
-        for y in np.linspace(0, goal, bins):
-            for z in np.linspace(0, goal, bins):
-                if individual.is_part_of_a_cube((goal, y, z)):
-                    total += 1
-        ratio = round(total / (3 * bins**2), 4)
+        ratio = individual.monte_carlo_filled_ratio(value + self.delta)
         return value * 1000 + ratio # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
     def selection(self, k = 5):
