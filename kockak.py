@@ -1,3 +1,5 @@
+import random
+
 class Cube:
     def __init__(self, size, x = 0, y = 0, z = 0):
         self.size = size
@@ -5,7 +7,7 @@ class Cube:
         self.y = y
         self.z = z
 
-    
+
 class Space:
     def __init__(self, n):
         self.n = n
@@ -14,7 +16,15 @@ class Space:
         self.cubes[1].x += self.cubes[0].size
         self.cubes[1].y += self.cubes[0].size
         self.cubes[1].z += self.cubes[0].size
+        self.randomize()
         self.delta = 0.001
+
+    def randomize(self):
+        """Set a random position (integer) for all cubes smaller than n-1"""
+        for cube in self.cubes[2:]:
+            cube.x = random.randint(0, cube[0].size)
+            cube.y = random.randint(0, cube[0].size)
+            cube.z = random.randint(0, cube[0].size)
 
     def fitness(self):
         value = self.n    # n*n-es kockát biztos le tudunk fedni
@@ -118,6 +128,36 @@ class Space:
                 return True
         return False
 
+class Genetic:
+    def __init__(self, n, population_size, generations, mutation_rate):
+        self.n = n
+        self.population_size = population_size
+        self.generations = generations
+        self.mutation_rate = mutation_rate
+        self.population = [Space(n) for i in range(population_size)] 
+
+    def crossover(self, individual1: Space, individual2: Space):
+        index = random.randint(2, self.n - 1)
+        child = Space(self.n)
+        child.cubes = individual1.cubes[:index] + individual2[index:]
+        return child
+    
+    def mutation(self, individual):
+        mutated_cubes = []
+        for cube in individual.cubes:
+            if random.random() < self.mutation_rate:
+                cube.x += round(random.random(), 3)
+                cube.x = max(0, cube.x)
+            if random.random() < self.mutation_rate:
+                cube.y += round(random.random(), 3)
+                cube.y = max(0, cube.y)
+            if random.random() < self.mutation_rate:
+                cube.z += round(random.random(), 3)
+                cube.z = max(0, cube.z)
+            mutated_cubes.append(cube)
+        mutated = Space(self.n)
+        mutated.cubes = mutated_cubes
+        return mutated
 
     
 def volume_sum(n:int) -> int:
