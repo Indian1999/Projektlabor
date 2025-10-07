@@ -271,6 +271,29 @@ class Space:
                 counter += 1
         return counter / (sample_size * 3)
 
+    def check_grid_coverage(self, goal_size):
+        """
+        Megnézi, hogy a goal_size méretű kocka le van-e fedve. Síralmasan lassú :'(
+        """
+        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
+                    if not self.is_part_of_a_cube((i,j,k)):
+                        return False
+        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
+                    if not self.is_part_of_a_cube((i,k,j)):
+                        return False
+        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
+                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
+                    if not self.is_part_of_a_cube((k,i,j)):
+                        return False
+        return True
+
+
+
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
         self.n = n
@@ -317,9 +340,9 @@ class Genetic:
             if not individual.has_two_cubes_on_all_zeros():
                 return -1 # Ha nincsen minden 0-s koordináta lefedve, büntetünk
             
-        value = individual.n    # n*n-es kockát biztos le tudunk fedni     
-        while individual.planes_part_of_cube((value + self.delta, value + self.delta, value + self.delta)):
-            value = value + self.delta
+        value = 2*individual.n    # ezt tuti nem fedjük le    
+        while not individual.check_grid_coverage(value + self.delta):
+            value = value - self.delta
         ratio = individual.monte_carlo_filled_ratio(value + self.delta)
         return value * 1000 + ratio # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
@@ -347,7 +370,7 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(n=20, population_size=50,  generations=2000, mutation_rate=0.1, accuracy=1)
+genetic = Genetic(n=16, population_size=10,  generations=2000, mutation_rate=0.1, accuracy=1)
 genetic.run()
 
 def volume_sum(n:int) -> int:
