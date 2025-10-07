@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Space:
-    def __init__(self, n:int, accuracy = 1, reach = 1, do_setup = True):
+    optimal_reaches = {}
+
+    def __init__(self, n:int, accuracy = 1, reach = None, do_setup = True):
         if n < 8:
             raise ValueError("There has to be at least 8 cubes!")
         self.n = n
@@ -14,10 +16,37 @@ class Space:
         self.delta = 10**-accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
-        if do_setup:
+        if do_setup and reach != None:
             self.setup(reach=reach)
+        elif do_setup:
+            self.setup_with_optimal_reach()
         self.fitness = 0
         self.result = None
+
+    def setup_with_optimal_reach(self):
+        if self.n in Space.optimal_reaches.keys():
+            self.reach = Space.optimal_reaches[self.n]
+            self.setup(reach=self.reach)
+            return
+        reach_value = self.n
+        reach_to_test = self.n*2-1
+        while reach_value == self.n:
+            print(reach_to_test)
+            self.reach = reach_to_test
+            self.setup(reach=reach_to_test)
+            value = self.n*2 -1
+            while 1.0 != self.monte_carlo_filled_ratio(value, mode = "strict", sample_size = 5000):
+                value -= self.delta
+                value = round(value,self.accuracy)
+            reach_value = round(value, self.accuracy)
+            reach_to_test -= self.delta
+            reach_to_test = round(reach_to_test, self.accuracy)
+            
+        # Itt szándékosan csinálom újra, különben nagyon a határon táncolunk és nem lesz jó a végkimenetel (a monte carlo miatt lehetnek apró lyukak a nagy kockában)
+        self.reach = reach_to_test
+        self.setup(self.reach)
+        Space.optimal_reaches[self.n] = self.reach
+         
 
     @classmethod
     def from_json(cls, json, accuracy = 1):
@@ -27,7 +56,8 @@ class Space:
         return space
 
     def setup(self, reach = 1):
-        cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1), (0, 1, 0.5), (1, 0, 0.5), (0, 0.5, 1), (1, 0.5, 0), (0.5, 0, 1), (0.5, 1, 0)] # 13 crucial points in total
+        # A cruical points sorrendje egy egyenlet alapján lett meghatározva, AI által lett megkeresve az optimális sorrend, bővebb infoért: resources/egyenlet_megoldás.txt
+        cruical_points = ["buffer", (1,1,1), (0,1,0), (1,0,0), (0,0,1), (1,1,0), (1,0,1), (0,1,1), (0, 1, 0.5), (0, 0.5, 1), (0.5, 0, 1), (1, 0, 0.5), (1, 0.5, 0), (0.5, 1, 0)] # 13 crucial points in total
         for i in range(1, min(len(cruical_points), self.n)):
             cube = self.cubes[i]
             offset = self.n - cube.size + reach
@@ -230,8 +260,9 @@ class Space:
                 return True
         return False
 
-    def monte_carlo_filled_ratio(self, goal_size, sample_size = 1000, mode: None | str = None):
+    def monte_carlo_filled_ratio(self, goal_size, sample_size = 2000, mode: None | str = None):
         counter = 0
+        goal_size = round(goal_size, self.accuracy)
         random_path = random.randint(1, 3)
         points = np.zeros((sample_size*3, 3))
         restricted = np.random.uniform(self.n, np.nextafter(goal_size, float("inf")), sample_size)
@@ -246,10 +277,14 @@ class Space:
         points[2*sample_size:, 0] = whole1
         points[2*sample_size:, 1] = whole2
         points[2*sample_size:, 2] = restricted
+        points = np.round(points, self.accuracy)
         for point in points:
             if self.is_part_of_a_cube(point):
                 counter += 1
             elif mode == "strict":
+                if goal_size < 16.1:
+                    print(self.cubes[0].x,self.cubes[0].y,self.cubes[0].z)
+                    print(point, goal_size)
                 return 0
         return counter / (sample_size * 3)
 

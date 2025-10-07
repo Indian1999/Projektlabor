@@ -7,7 +7,7 @@ from copy import deepcopy
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, 
                  generations:int = 10000, mutation_rate:float = 0.1, 
-                 accuracy:int = 3, reach = 1):
+                 accuracy:int = 3, reach = None):
         self.n = n
         self.reach = reach
         self.accuracy = accuracy
@@ -22,7 +22,7 @@ class Genetic:
    
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
-        child = Space(self.n, self.accuracy)
+        child = Space(self.n, self.accuracy, do_setup = False)
         child.cubes = individual1.cubes[:index] + individual2.cubes[index:]
         return child
     
@@ -45,7 +45,7 @@ class Genetic:
             cube.y = round(cube.y, self.accuracy)
             cube.z = round(cube.z, self.accuracy)
             mutated_cubes.append(cube)
-        mutated = Space(self.n, self.accuracy)
+        mutated = Space(self.n, self.accuracy, do_setup=False)
         mutated.cubes = mutated_cubes
         return mutated
     
@@ -122,8 +122,13 @@ class Genetic:
             self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
 
-genetic = Genetic(n=13, population_size=10,  generations=20,
-                   mutation_rate=0.1, accuracy=1, reach=2.1)
+genetic = Genetic(n=16, population_size=10,  generations=10,
+                   mutation_rate=0.1, accuracy=1, reach=None)
 genetic.run()
+
+"""
+TODO:
+    A space osztály konstruktorába írj egy eljárást ami megkísérli beállítani az optimális reach értéket
+"""
 
 
