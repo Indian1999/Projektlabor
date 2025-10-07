@@ -17,6 +17,7 @@ class Space:
         if do_setup:
             self.setup(reach=reach)
         self.fitness = 0
+        self.result = None
 
     @classmethod
     def from_json(cls, json, accuracy = 1):
@@ -27,7 +28,7 @@ class Space:
 
     def setup(self, reach = 1):
         cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1), (0, 1, 0.5), (1, 0, 0.5), (0, 0.5, 1), (1, 0.5, 0), (0.5, 0, 1), (0.5, 1, 0)] # 13 crucial points in total
-        for i in range(1, len(cruical_points)):
+        for i in range(1, min(len(cruical_points), self.n)):
             cube = self.cubes[i]
             offset = self.n - cube.size + reach
             position = (cruical_points[i][0]*offset, cruical_points[i][1]*offset, cruical_points[i][2]*offset)
@@ -70,7 +71,7 @@ class Space:
                 cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
                 cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
 
-    def plot_space(self, path = "default.png", gen = 0):
+    def plot_space(self, path = "default.png", title = None):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         for cube in self.cubes[1:]:
@@ -86,12 +87,16 @@ class Space:
         ax.set_xticks(ticks)
         ax.set_yticks(ticks)
         ax.set_zticks(ticks)
-        plt.title(f"Generation {gen}")
+        if title:
+            plt.title(title)
         plt.savefig(path)
         plt.close()
 
     def to_json(self):
         root = {}
+        if self.result == None:
+            self.evaluate()
+        root["result"] = self.result
         root["cubes"] = []
         for cube in self.cubes:
             cubeDict = {}
@@ -272,4 +277,10 @@ class Space:
                         return False
         return True
     
-    
+    def evaluate(self):
+        value = self.n * 2
+        while not self.check_grid_coverage(value):
+            value -= self.delta
+            value = round(value, self.accuracy)
+        self.result = value
+        return value

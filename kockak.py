@@ -1,9 +1,13 @@
 import random
+import time
 from space import Space
+import os
 from copy import deepcopy
 
 class Genetic:
-    def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3, reach = 1):
+    def __init__(self, n:int, population_size:int = 50, 
+                 generations:int = 10000, mutation_rate:float = 0.1, 
+                 accuracy:int = 3, reach = 1):
         self.n = n
         self.reach = reach
         self.accuracy = accuracy
@@ -13,6 +17,9 @@ class Genetic:
         self.mutation_rate = mutation_rate
         self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
 
+    def get_params_string(self):
+        return f"{time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())}_{self.n}_{self.population_size}_{self.generations}_{self.mutation_rate}_{self.accuracy}_{self.reach}"
+   
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
         child = Space(self.n, self.accuracy)
@@ -74,26 +81,49 @@ class Genetic:
     
     def run(self):
         for generation in range(self.generations):
-            best = self.population[0]
-            best.fitness = self.fitness(best)
+            self.best = self.population[0]
+            self.best.fitness = self.fitness(self.best)
             for individual in self.population[1:]:
                 individual.fitness = self.fitness(individual)
-                if individual.fitness > best.fitness:
-                    best = individual
-            print(f"Generation {generation}: The score of the best individual: {best.fitness}")
-            if generation % 10 == 0:
-                best.plot_space(f"plots/{generation}_gen_best.png", generation)
-                best.print_space(f"spaces/{generation}_gen_best.json", generation)
+                if individual.fitness > self.best.fitness:
+                    self.best = individual
+            print(f"Generation {generation}: The score of the best individual: {self.best.fitness}")
+            #if generation % 10 == 0:
+            #    self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
+            #    self.best.print_space(f"spaces/{generation}_gen_best.json", generation)
 
-            new_population = [deepcopy(best)]
+            new_population = [deepcopy(self.best)]
             while len(new_population) != self.population_size:
                 child = self.crossover(self.selection(), self.selection())
                 child = self.mutation(child)
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(n=16, population_size=10,  generations=2000,
-                   mutation_rate=0.1, accuracy=1, reach=2)
+        # Ha a monte carlo szerint haszontalan, nem vesződünk a pontos ellenőrzésével
+        # Legalább 95%-ban legyen olyan jó mint a legjobb
+        indeces = [i for i in range(self.population_size) if self.population[i].fitness > self.best.fitness * 0.95]
+        self.export_results(indeces)
+
+    def export_results(self, indeces:list[int] = None):
+        path = os.path.dirname(__file__)
+        os.makedirs(os.path.join(path, "results"), exist_ok=True)
+        path = os.path.join(path, "results")
+        dirname = self.get_params_string()
+        os.makedirs(os.path.join(path, dirname), exist_ok=True)
+        path = os.path.join(path, dirname)
+        os.makedirs(os.path.join(path, "plots"), exist_ok=True)
+        os.makedirs(os.path.join(path, "spaces"), exist_ok=True)
+        if indeces == None:
+            indeces = range(self.population_size)
+        for i in indeces:
+            appendix = ""
+            if self.population[i] == self.best:
+                appendix = "_best"
+            self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
+            self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
+
+genetic = Genetic(n=13, population_size=10,  generations=20,
+                   mutation_rate=0.1, accuracy=1, reach=2.1)
 genetic.run()
 
 
