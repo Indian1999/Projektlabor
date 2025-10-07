@@ -292,8 +292,6 @@ class Space:
                         return False
         return True
 
-
-
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
         self.n = n
@@ -340,7 +338,7 @@ class Genetic:
             if not individual.has_two_cubes_on_all_zeros():
                 return -1 # Ha nincsen minden 0-s koordináta lefedve, büntetünk
             
-        value = 2*individual.n    # ezt tuti nem fedjük le    
+        value = 2*individual.n - 1   # ezt tuti nem fedjük le    
         while not individual.check_grid_coverage(value + self.delta):
             value = value - self.delta
         ratio = individual.monte_carlo_filled_ratio(value + self.delta)
