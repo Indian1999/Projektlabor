@@ -39,7 +39,7 @@ class Cube:
     ]
 
 class Space:
-    def __init__(self, n, accuracy):
+    def __init__(self, n, accuracy = 1, reach = 1):
         if n < 8:
             raise ValueError("There has to be at least 8 cubes!")
         self.n = n
@@ -47,7 +47,7 @@ class Space:
         self.delta = 10**-accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
-        self.setup()
+        self.setup(reach=reach)
         self.fitness = 0
 
     def setup(self, reach = 1):
@@ -275,32 +275,37 @@ class Space:
         """
         Megnézi, hogy a goal_size méretű kocka le van-e fedve. Síralmasan lassú :'(
         """
-        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
-                    if not self.is_part_of_a_cube((i,j,k)):
+        for i in np.arange(goal_size, -self.delta/2, -self.delta):
+            for j in np.arange(goal_size, -self.delta/2, -self.delta):
+                for k in np.arange(goal_size, self.n-self.delta, -self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if not self.is_part_of_a_cube((x,y,z)):
                         return False
-        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
-                    if not self.is_part_of_a_cube((i,k,j)):
+        for i in np.arange(goal_size, -self.delta/2, -self.delta):
+            for j in np.arange(goal_size, -self.delta/2, -self.delta):
+                for k in np.arange(goal_size, self.n-self.delta, -self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if not self.is_part_of_a_cube((x,z,y)):
                         return False
-        for i in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-            for j in np.linspace(goal_size, 0, int(goal_size/self.delta)+1):
-                for k in np.linspace(goal_size, self.n, int((goal_size-self.n)/self.delta)+1):
-                    if not self.is_part_of_a_cube((k,i,j)):
+        for i in np.arange(goal_size, -self.delta/2, -self.delta):
+            for j in np.arange(goal_size, -self.delta/2, -self.delta):
+                for k in np.arange(goal_size, self.n-self.delta, -self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if not self.is_part_of_a_cube((k,x,y)):
                         return False
         return True
+    
 
 class Genetic:
-    def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3):
+    def __init__(self, n:int, population_size:int = 50, generations:int = 10000, mutation_rate:float = 0.1, accuracy:int = 3, reach = 1):
         self.n = n
+        self.reach = reach
         self.accuracy = accuracy
         self.delta = 10 ** -self.accuracy
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
-        self.population = [Space(n, self.accuracy) for i in range(self.population_size)] 
+        self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
 
     def crossover(self, individual1: Space, individual2: Space):
         index = random.randint(2, self.n - 1)
@@ -331,18 +336,18 @@ class Genetic:
         mutated.cubes = mutated_cubes
         return mutated
     
-    def fitness(self, individual):
+    def fitness(self, individual, mode = 1):
         for cube in individual.cubes[1:]:
             if individual.is_cube_within_base_cube(cube):
                 return -1 # Ha legalább egy kocka értelmetlen, büntetünk
             if not individual.has_two_cubes_on_all_zeros():
                 return -1 # Ha nincsen minden 0-s koordináta lefedve, büntetünk
-            
-        value = 2*individual.n - 1   # ezt tuti nem fedjük le    
-        while not individual.check_grid_coverage(value + self.delta):
-            value = value - self.delta
-        ratio = individual.monte_carlo_filled_ratio(value + self.delta)
-        return value * 1000 + ratio # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
+        if mode == 1:
+            value = 2*individual.n - 1   # ezt tuti nem fedjük le    
+            while not individual.check_grid_coverage(value + self.delta):
+                value = value - self.delta
+            ratio = individual.monte_carlo_filled_ratio(value + self.delta)
+            return value * 1000 + ratio # A lefedett kocka hatalmas bónusz, a bővítés lefedettsége kisebb
 
     def selection(self, k = 5):
         individuals = random.choices(self.population, k = k)
@@ -368,7 +373,8 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
 
-genetic = Genetic(n=16, population_size=10,  generations=2000, mutation_rate=0.1, accuracy=1)
+genetic = Genetic(n=16, population_size=10,  generations=2000,
+                   mutation_rate=0.1, accuracy=1, reach=2)
 genetic.run()
 
 def volume_sum(n:int) -> int:
