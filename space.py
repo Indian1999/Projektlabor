@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Space:
-    def __init__(self, n, accuracy = 1, reach = 1):
+    def __init__(self, n:int, accuracy = 1, reach = 1, do_setup = True):
         if n < 8:
             raise ValueError("There has to be at least 8 cubes!")
         self.n = n
@@ -14,8 +14,16 @@ class Space:
         self.delta = 10**-accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
-        self.setup(reach=reach)
+        if do_setup:
+            self.setup(reach=reach)
         self.fitness = 0
+
+    @classmethod
+    def from_json(cls, json, accuracy = 1):
+        n = len(json["cubes"])
+        space = cls(n, accuracy = accuracy, do_setup = False)
+        space.cubes = [Cube(c["size"], c["x"], c["y"], c["z"]) for c in json["cubes"]]
+        return space
 
     def setup(self, reach = 1):
         cruical_points = ["buffer", (1,1,1), (1,1,0), (1,0,1), (0,1,1), (1,0,0), (0,1,0), (0,0,1), (0, 1, 0.5), (1, 0, 0.5), (0, 0.5, 1), (1, 0.5, 0), (0.5, 0, 1), (0.5, 1, 0)] # 13 crucial points in total
