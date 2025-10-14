@@ -116,6 +116,7 @@ class Genetic:
             self.population = new_population
             if generation == self.generations:
                 break
+            generation += 1
 
         # Ha a monte carlo szerint haszontalan, nem vesződünk a pontos ellenőrzésével
         # Legalább 95%-ban legyen olyan jó mint a legjobb
