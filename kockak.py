@@ -88,9 +88,11 @@ class Genetic:
                 if individual.fitness > self.best.fitness:
                     self.best = individual
             print(f"Generation {generation}: The score of the best individual: {self.best.fitness}")
-            #if generation % 10 == 0:
-            #    self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
-            #    self.best.print_space(f"spaces/{generation}_gen_best.json", generation)
+            if generation % 500 == 0:
+                os.makedirs("plots", exist_ok=True)
+                os.makedirs("spaces", exist_ok=True)
+                self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
+                self.best.print_space(f"spaces/{generation}_gen_best.json", generation)
 
             new_population = [deepcopy(self.best)]
             while len(new_population) != self.population_size:
@@ -122,7 +124,7 @@ class Genetic:
             self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
 
-genetic = Genetic(n=16, population_size=10,  generations=10,
+genetic = Genetic(n=15, population_size=60,  generations=1,
                    mutation_rate=0.1, accuracy=1, reach=None)
 genetic.run()
 

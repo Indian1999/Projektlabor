@@ -31,7 +31,6 @@ class Space:
         reach_value = self.n
         reach_to_test = self.n*2-1
         while reach_value == self.n:
-            print(reach_to_test)
             self.reach = reach_to_test
             self.setup(reach=reach_to_test)
             value = self.n*2 -1
@@ -282,9 +281,6 @@ class Space:
             if self.is_part_of_a_cube(point):
                 counter += 1
             elif mode == "strict":
-                if goal_size < 16.1:
-                    print(self.cubes[0].x,self.cubes[0].y,self.cubes[0].z)
-                    print(point, goal_size)
                 return 0
         return counter / (sample_size * 3)
 

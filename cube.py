@@ -4,7 +4,6 @@ class Cube:
         self.x = x
         self.y = y
         self.z = z
-        self.set_vertices()
         self.set_faces()
 
     def set_position(self, x, y, z):
@@ -30,3 +29,14 @@ class Cube:
         [self.vertices[j] for j in [0,2,6,4]],
         [self.vertices[j] for j in [1,3,7,5]]
     ]
+
+    def get_center(self, rounding = None):
+        sum_x, sum_y, sum_z = 0,0,0
+        for coords in self.vertices:
+            sum_x += coords[0]
+            sum_y += coords[1]
+            sum_z += coords[2]
+        if rounding == None:
+            return (sum_x/8, sum_y/8, sum_z/8)
+        else:
+            return (round(sum_x/8, rounding), round(sum_y/8, rounding), round(sum_z/8, rounding))
