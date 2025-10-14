@@ -6,7 +6,7 @@ from copy import deepcopy
 
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, 
-                 generations:int = 10000, mutation_rate:float = 0.1, 
+                 generations:int = None, mutation_rate:float = 0.1, 
                  accuracy:int = 0, reach = None):
         self.n = n
         self.reach = reach
@@ -93,7 +93,8 @@ class Genetic:
         return max(individuals, key=lambda x: x.fitness)
     
     def run(self, fitness_mode = 1):
-        for generation in range(self.generations):
+        generation = 1
+        while True:
             self.best = self.population[0]
             self.best.fitness = self.fitness(self.best, mode = fitness_mode)
             for individual in self.population[1:]:
@@ -113,6 +114,8 @@ class Genetic:
                 child = self.mutation(child)
                 new_population.append(child)
             self.population = new_population
+            if generation == self.generations:
+                break
 
         # Ha a monte carlo szerint haszontalan, nem vesződünk a pontos ellenőrzésével
         # Legalább 95%-ban legyen olyan jó mint a legjobb
