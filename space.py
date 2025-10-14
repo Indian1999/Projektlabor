@@ -67,17 +67,29 @@ class Space:
             cube = self.cubes[i]
             random_path = random.randint(1,4)
             if random_path == 1:
-                cube.x = 0
-                cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
-                cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                if cube.size == 1 and self.accuracy == 0:
+                    # 0-s accuracy esetén az 1-es kockánál a randint low>= high hibát dob
+                    cube.set_position(0, self.n, self.n)
+                else:
+                    cube.x = 0
+                    cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                    cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
             elif random_path == 2:
-                cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
-                cube.y = 0
-                cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                if cube.size == 1 and self.accuracy == 0:
+                    # 0-s accuracy esetén az 1-es kockánál a randint low>= high hibát dob
+                    cube.set_position(0, self.n, self.n)
+                else:
+                    cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                    cube.y = 0
+                    cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
             elif random_path == 3:
-                cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
-                cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
-                cube.z = 0
+                if cube.size == 1 and self.accuracy == 0:
+                    # 0-s accuracy esetén az 1-es kockánál a randint low>= high hibát dob
+                    cube.set_position(0, self.n, self.n)
+                else:
+                    cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                    cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
+                    cube.z = 0
 
     def randomize(self):
         """Set a random position (integer) for all cubes smaller than n-1"""
@@ -304,10 +316,43 @@ class Space:
             for j in np.arange(goal_size, -self.delta/2, -self.delta):
                 for k in np.arange(goal_size, self.n-self.delta, -self.delta):
                     x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
-                    if not self.is_part_of_a_cube((k,x,y)):
+                    if not self.is_part_of_a_cube((z,x,y)):
                         return False
         return True
     
+    def next_size_filled_ratio(self, current_size, goal_size):
+        total = 0
+        points_to_check = []
+        for i in np.arange(current_size+self.delta, goal_size + self.delta, self.delta):
+            for j in np.arange(0, goal_size + self.delta, self.delta):
+                for k in np.arange(0, goal_size + self.delta, self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if (x,y,z) not in points_to_check:
+                        points_to_check.append((x,y,z))
+        for i in np.arange(current_size+self.delta, goal_size + self.delta, self.delta):
+            for j in np.arange(0, goal_size + self.delta, self.delta):
+                for k in np.arange(0, goal_size + self.delta, self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if (y,x,z) not in points_to_check:
+                        points_to_check.append((y,x,z))
+        for i in np.arange(current_size+self.delta, goal_size + self.delta, self.delta):
+            for j in np.arange(0, goal_size + self.delta, self.delta):
+                for k in np.arange(0, goal_size + self.delta, self.delta):
+                    x, y, z = round(i, self.accuracy), round(j, self.accuracy), round(k, self.accuracy)
+                    if (y,z,x) not in points_to_check:
+                        points_to_check.append((y,z,x))
+        for point in points_to_check:
+            if self.is_part_of_a_cube(point):
+                total += 1
+        maximum = (goal_size-current_size) * (goal_size+1) * (goal_size+1) / (self.delta ** 3) * 3
+        maximum -= 2 * ((goal_size-current_size) / self.delta)**3
+        maximum -= 3 * (goal_size/self.delta)
+        maximum = round(maximum, self.accuracy)
+        return total/maximum
+
+    
+
+
     def evaluate(self):
         value = self.n * 2
         while not self.check_grid_coverage(value):

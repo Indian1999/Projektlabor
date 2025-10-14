@@ -7,7 +7,7 @@ from copy import deepcopy
 class Genetic:
     def __init__(self, n:int, population_size:int = 50, 
                  generations:int = 10000, mutation_rate:float = 0.1, 
-                 accuracy:int = 3, reach = None):
+                 accuracy:int = 0, reach = None):
         self.n = n
         self.reach = reach
         self.accuracy = accuracy
@@ -30,15 +30,27 @@ class Genetic:
         mutated_cubes = [individual.cubes[0]]
         for cube in individual.cubes[1:]:
             if random.random() < self.mutation_rate:
-                cube.x += round(random.random()-0.5, self.accuracy)
+                if self.accuracy != 0:
+                    # Ha 0 az accuracy akkor ez nem csinál semmit
+                    cube.x += round(random.random()-0.5, self.accuracy)
+                else:
+                    cube.x += random.randint(-1,1)
                 cube.x = max(0, cube.x) 
                 cube.x = min(self.n, cube.x) #Semmi értelme ha nem ér hozzá a base kockához
             if random.random() < self.mutation_rate:
-                cube.y += round(random.random()-0.5, self.accuracy)
+                if self.accuracy != 0:
+                    # Ha 0 az accuracy akkor ez nem csinál semmit
+                    cube.y += round(random.random()-0.5, self.accuracy)
+                else:
+                    cube.y += random.randint(-1,1)
                 cube.y = max(0, cube.y)
                 cube.y = min(self.n, cube.y)
             if random.random() < self.mutation_rate:
-                cube.z += round(random.random()-0.5, self.accuracy)
+                if self.accuracy != 0:
+                    # Ha 0 az accuracy akkor ez nem csinál semmit
+                    cube.z += round(random.random()-0.5, self.accuracy)
+                else:
+                    cube.z += random.randint(-1,1)
                 cube.z = max(0, cube.z)
                 cube.z = min(self.n, cube.z)
             cube.x = round(cube.x, self.accuracy) # Ha ez nincs, akkor a floatok nem megfelelő értéken lesznek
@@ -69,8 +81,9 @@ class Genetic:
             return value + individual.monte_carlo_filled_ratio(value + self.delta)
         elif mode == 2:
             value = 2*individual.n - 1   # ezt tuti nem fedjük le    
-            while not individual.check_grid_coverage(value + self.delta):
+            while not individual.check_grid_coverage(value):
                 value = value - self.delta
+            value += individual.next_size_filled_ratio(value, value + self.delta)
             return value
         else:
             raise ValueError("Invalid mode, valid modes: 1, 2")
@@ -79,16 +92,16 @@ class Genetic:
         individuals = random.choices(self.population, k = k)
         return max(individuals, key=lambda x: x.fitness)
     
-    def run(self):
+    def run(self, fitness_mode = 1):
         for generation in range(self.generations):
             self.best = self.population[0]
-            self.best.fitness = self.fitness(self.best)
+            self.best.fitness = self.fitness(self.best, mode = fitness_mode)
             for individual in self.population[1:]:
-                individual.fitness = self.fitness(individual)
+                individual.fitness = self.fitness(individual, mode = fitness_mode)
                 if individual.fitness > self.best.fitness:
                     self.best = individual
             print(f"Generation {generation}: The score of the best individual: {self.best.fitness}")
-            if generation % 500 == 0:
+            if generation % 5 == 0:
                 os.makedirs("plots", exist_ok=True)
                 os.makedirs("spaces", exist_ok=True)
                 self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
@@ -124,13 +137,6 @@ class Genetic:
             self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
 
-genetic = Genetic(n=15, population_size=60,  generations=1,
-                   mutation_rate=0.1, accuracy=1, reach=None)
-genetic.run()
 
-"""
-TODO:
-    A space osztály konstruktorába írj egy eljárást ami megkísérli beállítani az optimális reach értéket
-"""
 
 
