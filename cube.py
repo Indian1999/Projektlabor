@@ -12,6 +12,12 @@ class Cube:
         self.z = z
 
     def set_vertices(self):
+        """
+        Sets the vertices of the cube based on its position and size.
+        The vertices are set as a list of tuples, each tuple containing the x, y, z coordinates of the vertex.
+        The coordinates are calculated by adding the position of the cube to the offsets of the vertices.
+        The offsets are calculated as 0 and the size of the cube.
+        """
         self.vertices = []
         deltas = [0, self.size]
         for i in deltas:
@@ -20,6 +26,9 @@ class Cube:
                     self.vertices.append((self.x + i, self.y + j, self.z + k))
 
     def set_faces(self):
+        """
+        Sets the faces of the cube based on its vertices.
+        """
         self.set_vertices()
         self.faces = [
         [self.vertices[j] for j in [0,1,3,2]],
@@ -31,6 +40,15 @@ class Cube:
     ]
 
     def get_center(self, rounding = None):
+        """
+        Returns the center coordinates of the cube.
+
+        Args:
+            rounding (int or None): If not None, the coordinates will be rounded to the given number of decimal places.
+
+        Returns:
+            tuple of 3 floats: The center coordinates of the cube in the format (x, y, z).
+        """
         sum_x, sum_y, sum_z = 0,0,0
         for coords in self.vertices:
             sum_x += coords[0]

@@ -18,6 +18,11 @@ class Genetic:
         self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
 
     def get_params_string(self):
+        """
+        Returns a string that contains the parameters of the genetic algorithm.
+        The string is in the format of: <date>_<n>_<population_size>_<generations>_<mutation_rate>_<accuracy>_<reach>
+        This string is used to name the folder where the results of the genetic algorithm are stored.
+        """
         return f"{time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())}_{self.n}_{self.population_size}_{self.generations}_{self.mutation_rate}_{self.accuracy}_{self.reach}"
    
     def crossover(self, individual1: Space, individual2: Space):
