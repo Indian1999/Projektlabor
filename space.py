@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 class Space:
     optimal_reaches = {}
 
-    def __init__(self, n:int, accuracy = 1, reach = None, do_setup = True):
+    def __init__(self, n:int, accuracy = 0, reach = None, do_setup = True):
         if n < 8:
             raise ValueError("There has to be at least 8 cubes!")
         self.n = n
@@ -24,6 +24,11 @@ class Space:
         self.result = None
 
     def setup_with_optimal_reach(self):
+        """
+        Sets up the space with the optimal reach value. If the optimal reach value is not known, it will be calculated.
+        The optimal reach value is the minimal reach value that still results in a filled space when the space is constructed with the given number of cubes.
+        The optimal reach value is stored in the Space.optimal_reaches dictionary for later use.
+        """
         if self.n in Space.optimal_reaches.keys():
             self.reach = Space.optimal_reaches[self.n]
             self.setup(reach=self.reach)
@@ -46,7 +51,6 @@ class Space:
         self.setup(self.reach)
         Space.optimal_reaches[self.n] = self.reach
          
-
     @classmethod
     def from_json(cls, json, accuracy = 1):
         n = len(json["cubes"])
@@ -166,7 +170,7 @@ class Space:
             root["cubes"].append(cubeDict)
         return root
 
-    def print_space(self, path = "default.json"):
+    def print_space(self, path = "default.json", gen = None):
         """
         Prints the space to a JSON file.
 

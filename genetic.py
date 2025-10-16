@@ -123,8 +123,6 @@ class Genetic:
                 break
             generation += 1
 
-        # Ha a monte carlo szerint haszontalan, nem vesződünk a pontos ellenőrzésével
-        # Legalább 95%-ban legyen olyan jó mint a legjobb
         indeces = [i for i in range(self.population_size) if self.population[i].fitness > self.best.fitness * 0.95]
         self.export_results(indeces)
 
@@ -145,7 +143,4 @@ class Genetic:
                 appendix = "_best"
             self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
-
-
-
 
