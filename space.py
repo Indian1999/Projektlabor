@@ -160,6 +160,8 @@ class Space:
         if self.result == None:
             self.evaluate()
         root["result"] = self.result
+        root["n"] = self.n
+        root["accuracy"] = self.accuracy
         root["cubes"] = []
         for cube in self.cubes:
             cubeDict = {}
@@ -167,6 +169,10 @@ class Space:
             cubeDict["x"] = cube.x
             cubeDict["y"] = cube.y
             cubeDict["z"] = cube.z
+            center = cube.get_center()
+            cubeDict["x_center"] = center[0]
+            cubeDict["y_center"] = center[1]
+            cubeDict["z_center"] = center[2]
             root["cubes"].append(cubeDict)
         return root
 

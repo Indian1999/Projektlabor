@@ -112,7 +112,6 @@ class Genetic:
                 if individual.fitness > self.best.fitness:
                     self.best = individual
             yield f"Generation {generation}: The score of the best individual: {self.best.fitness}"
-            print(f"Generation {generation}: The score of the best individual: {self.best.fitness}")
             if generation % 5 == 0:
                 os.makedirs("plots", exist_ok=True)
                 os.makedirs("spaces", exist_ok=True)
@@ -126,15 +125,14 @@ class Genetic:
                 new_population.append(child)
             self.population = new_population
             if generation == self.generations:
+                self.running = False
                 break
             generation += 1
 
         yield "Exporting results..."
-        print("Exporting results...")
         indeces = [i for i in range(self.population_size) if self.population[i].fitness > self.best.fitness * 0.95]
         self.export_results(indeces)
         yield "Done!"
-        print("Done!")
 
     def export_results(self, indeces:list[int] = None):
         path = os.path.dirname(__file__)
