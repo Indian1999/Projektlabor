@@ -16,6 +16,7 @@ class Genetic:
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
+        self.running = False
 
     def get_params_string(self):
         """
@@ -97,15 +98,20 @@ class Genetic:
         individuals = random.choices(self.population, k = k)
         return max(individuals, key=lambda x: x.fitness)
     
+    def stop(self):
+        self.running = False
+
     def run(self, fitness_mode = 1):
         generation = 1
-        while True:
+        self.running = True
+        while self.running:
             self.best = self.population[0]
             self.best.fitness = self.fitness(self.best, mode = fitness_mode)
             for individual in self.population[1:]:
                 individual.fitness = self.fitness(individual, mode = fitness_mode)
                 if individual.fitness > self.best.fitness:
                     self.best = individual
+            yield f"Generation {generation}: The score of the best individual: {self.best.fitness}"
             print(f"Generation {generation}: The score of the best individual: {self.best.fitness}")
             if generation % 5 == 0:
                 os.makedirs("plots", exist_ok=True)
@@ -123,8 +129,12 @@ class Genetic:
                 break
             generation += 1
 
+        yield "Exporting results..."
+        print("Exporting results...")
         indeces = [i for i in range(self.population_size) if self.population[i].fitness > self.best.fitness * 0.95]
         self.export_results(indeces)
+        yield "Done!"
+        print("Done!")
 
     def export_results(self, indeces:list[int] = None):
         path = os.path.dirname(__file__)
