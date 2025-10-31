@@ -2,21 +2,32 @@ import random
 import time
 from space import Space
 import os
+import threading
 from copy import deepcopy
+from cubesolver import CubeSolver
 
-class Genetic:
+class Genetic(CubeSolver):
     def __init__(self, n:int, population_size:int = 50, 
                  generations:int = None, mutation_rate:float = 0.1, 
-                 accuracy:int = 0, reach = None):
+                 accuracy:int = 0, reach = None, fitness_mode: int = 1):
         self.n = n
         self.reach = reach
         self.accuracy = accuracy
+        self.pause_event = threading.Event()
+        self.pause_event.clear()
         self.delta = 10 ** -self.accuracy
-        self.population_size = population_size
+        self.population_size = population_size     
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
         self.running = False
+        self.fitness_mode = fitness_mode
+
+    def pause(self):
+        self.pause_event.clear()
+
+    def resume(self):
+        self.pause_event.set()
 
     def get_params_string(self):
         """
@@ -101,10 +112,14 @@ class Genetic:
     def stop(self):
         self.running = False
 
-    def run(self, fitness_mode = 1):
+    def run(self, fitness_mode = None):
+        if fitness_mode != None:
+            print("fitness_mode is a deprecated parameter, the fitness mode is automaticly set to self.fitness_mode")
+        fitness_mode = self.fitness_mode
         generation = 1
         self.running = True
         while self.running:
+            self.pause_event.wait()
             self.best = self.population[0]
             self.best.fitness = self.fitness(self.best, mode = fitness_mode)
             for individual in self.population[1:]:

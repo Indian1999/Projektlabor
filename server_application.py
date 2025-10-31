@@ -4,6 +4,7 @@ import json
 class ServerApplication():
     def __init__(self):
         self.results = []
+        self.processes = []
 
     def get_best_space(self, n:int):
         best = None

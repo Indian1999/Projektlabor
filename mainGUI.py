@@ -49,12 +49,12 @@ class MainGUI:
         generations = int(self.generations_entry.get())
         mutation_rate = float(self.mutation_rate_entry.get())
         accuracy = int(self.accuracy_entry.get())
-        self.genetic = Genetic(n=n, population_size=population_size,  generations=generations, mutation_rate=mutation_rate, accuracy=accuracy, reach=None)
+        self.genetic = Genetic(n=n, population_size=population_size,  generations=generations, mutation_rate=mutation_rate, accuracy=accuracy, reach=None, fitness_mode=2)
         self.thread = threading.Thread(target=self.run_genetic, daemon=True)
         self.thread.start()
 
     def run_genetic(self):
-        for msg in self.genetic.run(fitness_mode=2):
+        for msg in self.genetic.run():
             self.append_output(msg)
 
     def append_output(self, msg):
