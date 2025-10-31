@@ -22,6 +22,7 @@ class Genetic(CubeSolver):
         self.population = [Space(n, self.accuracy, self.reach) for i in range(self.population_size)] 
         self.running = False
         self.fitness_mode = fitness_mode
+        self.results = []
 
     def pause(self):
         self.pause_event.clear()
@@ -166,4 +167,5 @@ class Genetic(CubeSolver):
                 appendix = "_best"
             self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
+            self.results.append(self.population[i].to_json())
 
