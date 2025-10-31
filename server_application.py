@@ -41,7 +41,6 @@ class ServerApplication():
 
     def terminate_process(self, index: int):
         self.processes[index].terminate()
-        del self.processes[index]
 
     def get_best_space(self, n:int):
         best = None
