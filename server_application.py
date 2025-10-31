@@ -31,7 +31,7 @@ class ServerApplication():
         return highest
 
     def on_terminate(self, process: Process):
-        self.results.extend(process.solver.space.results)
+        self.results.extend(process.solver.results)
         self.processes.remove(process)
         if len(self.processes) != 0:
             self.active_process_index = self.highest_priority_process_index()

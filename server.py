@@ -13,6 +13,7 @@ class GeneticProcessItem(BaseModel):
     reach:float = None
     fitness_mode:int = None
     priority:int = 0
+    start_immediately:bool = False
 
 
 app = FastAPI()
@@ -34,5 +35,6 @@ async def add_process(process: GeneticProcessItem):
     genetic = Genetic(process.n, process.population_size,
                       process.generations, process.mutation_rate, process.accuracy,
                       process.reach, process.fitness_mode)
-    process = Process(genetic, process.priority)
-    server_app.add_process(process)
+    
+    server_app.add_process(Process(genetic, process.priority), 
+                           start_immediately=process.start_immediately)
