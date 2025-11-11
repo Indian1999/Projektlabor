@@ -124,7 +124,7 @@ class Genetic(CubeSolver):
     def stop(self):
         self.running = False
 
-    def run(self, fitness_mode = None):
+    def run(self, fitness_mode = None, plot_space = False):
         if fitness_mode != None:
             print("fitness_mode is a deprecated parameter, the fitness mode is automaticly set to self.fitness_mode")
         fitness_mode = self.fitness_mode
@@ -139,11 +139,11 @@ class Genetic(CubeSolver):
                 if individual.fitness > self.best.fitness:
                     self.best = individual
             yield f"Generation {generation}: The score of the best individual: {self.best.fitness}"
-            if generation % 5 == 0:
-                os.makedirs("plots", exist_ok=True)
-                os.makedirs("spaces", exist_ok=True)
-                self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
-                self.best.print_space(f"spaces/{generation}_gen_best.json", generation)
+            #if generation % 5 == 0:
+            #    os.makedirs("plots", exist_ok=True)
+            #    os.makedirs("spaces", exist_ok=True)
+            #    self.best.plot_space(f"plots/{generation}_gen_best.png", generation)
+            #    self.best.print_space(f"spaces/{generation}_gen_best.json", generation)
 
             new_population = [deepcopy(self.best)]
             while len(new_population) != self.population_size:
@@ -158,10 +158,10 @@ class Genetic(CubeSolver):
 
         yield "Exporting results..."
         indeces = [i for i in range(self.population_size) if self.population[i].fitness > self.best.fitness * 0.95]
-        self.export_results(indeces)
+        self.export_results(indeces, plot_space)
         yield "Done!"
 
-    def export_results(self, indeces:list[int] = None):
+    def export_results(self, indeces:list[int] = None, plot_space = False):
         path = os.path.dirname(__file__)
         os.makedirs(os.path.join(path, "results"), exist_ok=True)
         path = os.path.join(path, "results")
@@ -176,7 +176,8 @@ class Genetic(CubeSolver):
             appendix = ""
             if self.population[i] == self.best:
                 appendix = "_best"
-            self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
+            if plot_space:
+                self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
             self.results.append(self.population[i].to_json())
 
