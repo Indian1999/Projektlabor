@@ -30,6 +30,17 @@ class Genetic(CubeSolver):
     def resume(self):
         self.pause_event.set()
 
+    def to_json(self):
+        return {
+            "n": self.n,
+            "population_size": self.population_size,
+            "generations": self.generations,
+            "mutation_rate": self.mutation_rate,
+            "accuracy": self.accuracy,
+            "reach": self.reach,
+            "fitness_mode": self.fitness_mode
+        }
+
     def get_params_string(self):
         """
         Returns a string that contains the parameters of the genetic algorithm.

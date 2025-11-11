@@ -1,6 +1,9 @@
 class CubeSolver:
     def __init__(self):
         raise NotImplementedError
+    
+    def to_json(self):
+        raise NotImplementedError
 
     def get_params_string(self):
         raise NotImplementedError

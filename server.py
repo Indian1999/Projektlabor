@@ -2,6 +2,7 @@ from server_application import ServerApplication
 from fastapi import FastAPI
 from pydantic import BaseModel
 from genetic import Genetic
+from typing import Optional
 from process import Process
 
 class GeneticProcessItem(BaseModel):
@@ -9,11 +10,11 @@ class GeneticProcessItem(BaseModel):
     population_size:int
     generations:int
     mutation_rate:float
-    accuracy: int
-    reach:float = None
-    fitness_mode:int = None
-    priority:int = 0
-    start_immediately:bool = False
+    accuracy: Optional[int] = 0
+    reach: Optional[float] = None
+    fitness_mode: Optional[int] = 2
+    priority: Optional[int] = 0
+    start_immediately: Optional[bool] = False
 
 
 app = FastAPI()
@@ -39,6 +40,8 @@ async def add_process(process: GeneticProcessItem):
     server_app.add_process(Process(genetic, process.priority), 
                            start_immediately=process.start_immediately)
     
+    return {"message": "Process added successfully."}
+    
 @app.post("/terminate_process/{index}")
 async def terminate_process(index: int):
     server_app.terminate_process(index)
@@ -46,3 +49,7 @@ async def terminate_process(index: int):
 @app.post("/change_active_process/{index}")
 async def change_active_process(index: int):
     server_app.change_active_process(index)
+
+@app.get("/processes")
+async def get_processes():
+    return server_app.get_processes(format = "json")

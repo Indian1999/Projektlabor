@@ -17,6 +17,9 @@ class Process:
         path = os.path.join(path, "output_logs", filename)
         self.file = open(path, "w", encoding="utf-8")
 
+    def to_json(self):
+        return self.solver.to_json()
+
     def run_solver(self):
         for msg in self.solver.run():
             self.file.write(msg + "\n")

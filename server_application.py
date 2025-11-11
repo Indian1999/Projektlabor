@@ -17,6 +17,28 @@ class ServerApplication():
             self.active_process_index = len(self.processes) - 1
             self.processes[self.active_process_index].resume()
 
+    def get_processes(self, format = None):
+        """
+        Retrieve processes in the specified format.
+
+        Args:
+            format (str, optional): The desired output format. If set to "json", 
+                returns a list of process objects serialized to JSON format. 
+                Defaults to None, which returns the raw process objects.
+
+        Returns:
+            list: If format is "json", returns a list of dictionaries containing 
+                JSON-serialized process data. Otherwise, returns the list of 
+                process objects directly.
+        """
+        if format == "json":
+            processes = []
+            for process in self.processes:
+                processes.append(process.to_json())
+            return processes
+        else:
+            return self.processes
+
     def change_active_process(self, index: int):
         if self.active_process_index:
             self.processes[self.active_process_index].pause()
