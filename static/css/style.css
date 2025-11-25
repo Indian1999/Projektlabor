@@ -4,6 +4,12 @@
 }
 
 body {
+    /*
+    Esetleg majd egy jobb képpel
+    background-image: url("../images/bcg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;*/
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     min-height: 100vh;
 }

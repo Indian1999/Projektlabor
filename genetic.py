@@ -126,7 +126,7 @@ class Genetic(CubeSolver):
 
     def run(self, fitness_mode = None, plot_space = False):
         if fitness_mode != None:
-            print("fitness_mode is a deprecated parameter, the fitness mode is automaticly set to self.fitness_mode")
+            print("genetic.run(): fitness_mode is a deprecated parameter, the fitness mode is automaticly set to self.fitness_mode")
         fitness_mode = self.fitness_mode
         generation = 1
         self.running = True
