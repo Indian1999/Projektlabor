@@ -1,0 +1,185 @@
+@startuml Cube Solver Architecture
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #F0F0F0
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+
+' ==================== Core Classes ====================
+
+class Cube {
+    - size: int
+    - x: float
+    - y: float
+    - z: float
+    - vertices: list[tuple]
+    - faces: list[list[tuple]]
+    --
+    + __init__(size, x=0, y=0, z=0)
+    + set_position(x, y, z): void
+    + set_random_position(lower, upper, step): void
+    + set_vertices(): void
+    + set_faces(): void
+    + get_center(rounding=None): tuple[float, float, float]
+}
+
+' ==================== Space Class ====================
+
+class Space {
+    - {static} optimal_reaches: dict
+    - n: int
+    - accuracy: int
+    - delta: float
+    - cubes: list[Cube]
+    - fitness: float
+    - result: float
+    - reach: float
+    --
+    + __init__(n, accuracy=0, reach=None, do_setup=True)
+    + {static} from_json(json, accuracy=1): Space
+    + setup(reach=1): void
+    + setup_with_optimal_reach(): void
+    + randomize(): void
+    + plot_space(path, title): void
+    + to_json(): dict
+    + print_space(path, gen): void
+    + union_of_intervals(intervals): tuple[float]
+    + interval_contains(value, other): bool
+    + planes_part_of_cube(point): bool
+    + get_cube_intervals(cubes, axis1, axis2): list[tuple[float]]
+    + get_cubes_on_plane(value, axis): list[Cube]
+    + is_part_of_a_cube(point): bool
+    + is_cube_within_base_cube(cube): bool
+    + has_two_cubes_on_all_zeros(): bool
+    + monte_carlo_filled_ratio(goal_size, sample_size, mode): float
+    + check_grid_coverage(goal_size): bool
+    + next_size_filled_ratio(current_size, goal_size): float
+    + evaluate(): float
+}
+
+Space --> Cube : tartalmaz\n0..*
+
+' ==================== Abstract Base Class ====================
+
+class CubeSolver {
+    {abstract}
+    + __init__()
+    + {abstract} to_json(): dict
+    + {abstract} get_params_string(): str
+    + {abstract} pause(): void
+    + {abstract} resume(): void
+    + {abstract} stop(): void
+    + {abstract} run(): generator
+    + {abstract} export_results(indeces): void
+}
+
+' ==================== Genetic Algorithm ====================
+
+class Genetic {
+    - n: int
+    - reach: float
+    - accuracy: int
+    - pause_event: threading.Event
+    - delta: float
+    - population_size: int
+    - generations: int
+    - mutation_rate: float
+    - population: list[Space]
+    - running: bool
+    - fitness_mode: int
+    - results: list[dict]
+    - best: Space
+    --
+    + __init__(n, population_size=50, generations, mutation_rate=0.1, accuracy=0, reach=None, fitness_mode=1)
+    + pause(): void
+    + resume(): void
+    + to_json(): dict
+    + get_params_string(): str
+    + crossover(individual1, individual2): Space
+    + mutation(individual): Space
+    + fitness(individual, mode=1): float
+    + selection(k=5): Space
+    + stop(): void
+    + run(fitness_mode=None, plot_space=False): generator
+    + export_results(indeces, plot_space): void
+}
+
+Genetic --|> CubeSolver : kiterjeszti
+Genetic --> Space : használ\n0..*
+
+' ==================== Constructive Algorithm ====================
+
+class Constructive {
+    - n: int
+    - accuracy: int
+    - reach: float
+    - strategy: str
+    - iterations: int
+    - delta: float
+    - results: list
+    - running: bool
+    - best: Space
+    --
+    + __init__(n, accuracy=0, reach=None, strategy="corner_first", iterations=100)
+    + find_gaps(space, target_size): list[tuple]
+    + score_position(space, cube, x, y, z): float
+    + corner_first_strategy(space): Space
+    + layer_by_layer_strategy(space): Space
+    + gap_filling_strategy(space): Space
+    + hybrid_strategy(space): Space
+    + build_solution(): Space
+    + to_json(): dict
+    + get_params_string(): str
+    + pause(): void
+    + resume(): void
+    + stop(): void
+    + run(): generator
+    + export_results(): void
+}
+
+Constructive --|> CubeSolver : kiterjeszti
+Constructive --> Space : használ\n0..*
+
+' ==================== Process Management ====================
+
+class Process {
+    - solver: CubeSolver
+    - running: bool
+    - finished: bool
+    - priority: int
+    - on_terminate: function
+    - file: file
+    - thread: threading.Thread
+    --
+    + __init__(solver, priority=0)
+    + to_json(): dict
+    + run_solver(): void
+    + pause(): void
+    + resume(): void
+    + terminate(): void
+}
+
+Process --> CubeSolver : használ
+
+' ==================== Server Application ====================
+
+class ServerApplication {
+    - results: list[dict]
+    - processes: list[Process]
+    - active_process_index: int
+    --
+    + __init__()
+    + add_process(process, start_immediately=False): void
+    + get_processes(format=None): list
+    + change_active_process(index): void
+    + highest_priority_process_index(): int
+    + on_terminate(process): void
+    + terminate_process(index): void
+    + get_best_space(n): dict
+    + load_results(): void
+}
+
+ServerApplication --> Process : kezeli\n0..*
+ServerApplication --> CubeSolver : kezeli\n(közvetetten)
+
+@enduml

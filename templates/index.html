@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Főoldal - Cube Solver{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Kockapakolási Optimalizáció</h1>
+    <p class="hero-subtitle">Genetikus algoritmus és Constructive Heuristic alapú megoldások</p>
+</div>
+
+<div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+        <h3>Összes eredmény</h3>
+        <p class="stat-number" id="totalResults">-</p>
+    </div>
+    <div class="stat-card">
+        <h3>Aktív folyamatok</h3>
+        <p class="stat-number" id="activeProcesses">-</p>
+    </div>
+    <div class="stat-card">
+        <h3>N értékek</h3>
+        <p class="stat-number" id="nValues">-</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Legjobb eredmények N szerint</h2>
+    <div id="bestResults" class="results-table-container">
+        <p>Betöltés...</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

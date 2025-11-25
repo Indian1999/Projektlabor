@@ -184,8 +184,19 @@ class Space:
             path (str): The path to the JSON file to write to. Defaults to "default.json".
         """
         payload = self.to_json()
+
+        # NumPy int típusától kicrashel a json dump, ezért kell
+        def convert(obj):
+            if isinstance(obj, np.integer):
+                return int(obj)
+            elif isinstance(obj, np.floating):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            return obj
+
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, indent=4, ensure_ascii=True)
+            json.dump(payload, f, indent=4, ensure_ascii=True, default=convert)
 
     def union_of_intervals(self, intervals: list[tuple[float]]) -> tuple[float]:
         """

@@ -1,0 +1,76 @@
+@startuml Component Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam componentBackgroundColor #E8F4F8
+skinparam componentBorderColor #333333
+skinparam arrowColor #333333
+skinparam fontSize 11
+
+' ==================== User Interface Layer ====================
+package "Felhasználói Interfészek" #E3F2FD {
+    component [Unity.py\n(Tkinter)] as UnityUI
+    component [web_app.py\n(Flask)] as WebUI
+}
+
+' ==================== Presentation & API Layer ====================
+package "API & Server" #F3E5F5 {
+    component [server.py\n(FastAPI)] as FastAPI
+    component [ServerApplication] as ServerApp
+}
+
+' ==================== Business Logic Layer ====================
+package "Algoritmusok & Megoldók" #FFF3E0 {
+    component [CubeSolver\n(absztrakt)] as CubeSolverBase
+    component [Genetic\nAlgoritmus] as GeneticAlgo
+    component [Constructive\nAlgoritmus] as ConstructiveAlgo
+    component [Process\nKezelő] as ProcessManager
+}
+
+' ==================== Data & Models Layer ====================
+package "Adatmodellek" #E8F5E9 {
+    component [Space\n(3D tér)] as SpaceModel
+    component [Cube\n(3D kocka)] as CubeModel
+    component [Persistence\n(JSON, CSV)] as Persistence
+}
+
+' ==================== Utilities & Infrastructure ====================
+package "Segédeszközök" #FFFDE7 {
+    component [Visualization\n(matplotlib)] as Visualization
+    component [Threading\n& Events] as Threading
+    component [Utilities\n& Helpers] as Utils
+}
+
+' ==================== Dependencies & Relationships ====================
+
+' UI to Server
+UnityUI --> FastAPI: HTTP kérések
+WebUI --> FastAPI: HTTP kérések
+FastAPI --> ServerApp: továbbít parancsokat
+
+' ServerApp to Algorithms
+ServerApp --> ProcessManager: folyamatokat indít/kezel
+ProcessManager --> CubeSolverBase: futtat
+
+' Algorithms to Models
+CubeSolverBase --> SpaceModel: használ
+GeneticAlgo --|> CubeSolverBase: kiterjeszti
+ConstructiveAlgo --|> CubeSolverBase: kiterjeszti
+SpaceModel --> CubeModel: tartalmaz
+
+' Models to Utilities
+SpaceModel --> Visualization: vizualizáláshoz
+SpaceModel --> Persistence: adatok mentéséhez
+
+' Algorithms to Infrastructure
+CubeSolverBase --> Threading: szálas futtatás
+ProcessManager --> Threading: szálkezelés
+
+' Cross-cutting concerns
+GeneticAlgo --> Utils: segédfunkciók
+ConstructiveAlgo --> Utils: segédfunkciók
+
+' Persistence & Visualization
+Persistence -.-> SpaceModel: betölt/ment
+Visualization -.-> SpaceModel: megjeleníti
+
+@enduml

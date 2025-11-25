@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Folyamatok - Cube Solver{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h1 class="mb-2">Folyamatok kezelése</h1>
+        <p class="text-muted mb-0">Aktív optimalizálási folyamatok monitorozása és kezelése</p>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Aktív folyamatok (<span id="processCount">0</span>)</h2>
+            <button onclick="refreshProcesses()" class="btn btn-primary">Frissítés</button>
+        </div>
+    </div>
+</div>
+
+<div id="processesList">
+    <p class="text-muted text-center p-5">Nincs aktív folyamat</p>
+</div>
+
+<div class="text-center mt-4">
+    <a href="/new-process" class="btn btn-success btn-lg">Új folyamat indítása</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/processes.js') }}"></script>
+{% endblock %}

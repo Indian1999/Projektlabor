@@ -12,7 +12,7 @@ class ServerApplication():
         process.on_terminate = self.on_terminate
         self.processes.append(process)
         if start_immediately:
-            if self.active_process_index:
+            if self.active_process_index is not None:
                 self.processes[self.active_process_index].pause()
             self.active_process_index = len(self.processes) - 1
             self.processes[self.active_process_index].resume()

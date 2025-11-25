@@ -16,7 +16,6 @@ class GeneticProcessItem(BaseModel):
     priority: Optional[int] = 0
     start_immediately: Optional[bool] = False
 
-
 app = FastAPI()
 
 server_app = ServerApplication()

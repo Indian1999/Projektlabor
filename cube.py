@@ -1,3 +1,4 @@
+from random import randrange
 class Cube:
     def __init__(self, size, x = 0, y = 0, z = 0):
         self.size = size
@@ -10,6 +11,13 @@ class Cube:
         self.x = x
         self.y = y
         self.z = z
+
+    def set_random_position(self, lower, upper, step):
+        """[lower,upper)"""
+        x = randrange(lower, upper, step)
+        y = randrange(lower, upper, step)
+        z = randrange(lower, upper, step)
+        self.set_position(x,y,z)
 
     def set_vertices(self):
         """
