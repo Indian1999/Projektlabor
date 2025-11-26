@@ -264,10 +264,10 @@ class Constructive:
         dirname = self.get_params_string()
         os.makedirs(os.path.join(path, dirname), exist_ok=True)
         path = os.path.join(path, dirname)
-        os.makedirs(os.path.join(path, "plots"), exist_ok=True)
+        #os.makedirs(os.path.join(path, "plots"), exist_ok=True)
         os.makedirs(os.path.join(path, "spaces"), exist_ok=True)
 
-        self.best.plot_space(os.path.join(path, "plots", "best.png"), f"Score: {self.best.result}")
+        #self.best.plot_space(os.path.join(path, "plots", "best.png"), f"Score: {self.best.result}")
         self.best.print_space(os.path.join(path, "spaces", "best.json"))
 
         self.results.append(self.best.to_json())

@@ -2,8 +2,6 @@ import numpy as np
 from cube import Cube
 import random
 import json
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Space:
     optimal_reaches = {}
@@ -123,34 +121,6 @@ class Space:
                 cube.x = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
                 cube.y = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
                 cube.z = np.random.randint((self.n - cube.size + self.delta) * 10**self.accuracy, self.cubes[0].size * 10**self.accuracy) / 10**self.accuracy
-
-    def plot_space(self, path = "default.png", title = None):
-        """
-        Plots the space in a 3D plot
-
-        Args:
-            path (str): The path to save the plot. Defaults to "default.png".
-            title (str): The title of the plot. Defaults to None
-        """
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        for cube in self.cubes[1:]:
-            cube.set_faces()
-            ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="cyan", edgecolors="black", alpha=0.5))
-        cube = self.cubes[0]
-        cube.set_faces()
-        ax.add_collection3d(Poly3DCollection(cube.faces, facecolors="red", edgecolors="black", alpha=0.7))
-        ax.set_xlim(0, self.n*2)
-        ax.set_ylim(0, self.n*2)
-        ax.set_zlim(0, self.n*2)
-        ticks = [i for i in range(0, self.n*2 + 1, 2)]
-        ax.set_xticks(ticks)
-        ax.set_yticks(ticks)
-        ax.set_zticks(ticks)
-        if title:
-            plt.title(title)
-        plt.savefig(path)
-        plt.close()
 
     def to_json(self):
         """

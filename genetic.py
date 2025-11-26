@@ -171,7 +171,8 @@ class Genetic(CubeSolver):
         dirname = self.get_params_string()
         os.makedirs(os.path.join(path, dirname), exist_ok=True)
         path = os.path.join(path, dirname)
-        os.makedirs(os.path.join(path, "plots"), exist_ok=True)
+        if plot_space:
+            os.makedirs(os.path.join(path, "plots"), exist_ok=True)
         os.makedirs(os.path.join(path, "spaces"), exist_ok=True)
         if indeces == None:
             indeces = range(self.population_size)
@@ -179,8 +180,8 @@ class Genetic(CubeSolver):
             appendix = ""
             if self.population[i] == self.best:
                 appendix = "_best"
-            if plot_space:
-                self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
+            #if plot_space:
+            #    self.population[i].plot_space(os.path.join(path, "plots", f"space_{i+1}{appendix}.png"), f"Solution {i+1}")
             self.population[i].print_space(os.path.join(path, "spaces", f"space_{i+1}{appendix}.json"), f"Solution {i+1}")
             self.results.append(self.population[i].to_json())
 
