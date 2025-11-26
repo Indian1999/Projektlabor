@@ -8,7 +8,7 @@ class ServerApplication():
         self.results = []
         self.processes = []
         self.active_process_index = None
-        self.log_file = open("server_log.txt", "w", encoding="utf-8")
+        self.log_file = open("server_log.txt", "a", encoding="utf-8")
         self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+" Server started\n")
 
     def __del__(self):
