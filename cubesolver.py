@@ -22,3 +22,6 @@ class CubeSolver:
 
     def export_results(self, indeces:list[int] = None):
         raise NotImplementedError
+    
+    def get_log_info(self):
+        raise NotImplementedError

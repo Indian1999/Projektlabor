@@ -24,6 +24,18 @@ class Genetic(CubeSolver):
         self.fitness_mode = fitness_mode
         self.results = []
 
+
+    def get_log_info(self):
+        return f"""
+        Method: Genetic
+        N: {self.n}
+        Accuracy: {self.accuracy}
+        Population Size: {self.population_size}
+        Generations: {self.generations}
+        Mutation Rate: {self.mutation_rate}
+        Fitness Mode: {"Monte Carlo (1)" if self.fitness_mode == 1 else "Full Grid Coverage (2)"}
+        Reach: {self.reach}"""
+
     def pause(self):
         self.pause_event.clear()
 

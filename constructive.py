@@ -18,6 +18,15 @@ class Constructive:
         self.running = False
         self.best = None
 
+    def get_log_info(self):
+        return f"""
+        Method: Constructive
+        N: {self.n}
+        Iterations: {self.iterations}
+        Strategy: {self.strategy}
+        Accuracy: {self.accuracy}
+        Reach: {self.reach}"""
+
     def find_gaps(self, space: Space, target_size: float) -> list[tuple]:
         gaps = []
         step = self.delta

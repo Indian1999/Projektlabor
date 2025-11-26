@@ -17,6 +17,14 @@ class Process:
         self.thread = threading.Thread(target=self.run_solver, daemon=True)
         self.thread.start()
 
+    def get_log_info(self):
+        return f"""
+        Priority: {self.priority}
+        Running: {self.running}
+        Finished: {self.finished}
+        {self.solver.get_log_info()}
+        """
+
     def to_json(self):
         return self.solver.to_json()
 
