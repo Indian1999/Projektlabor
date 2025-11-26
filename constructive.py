@@ -61,7 +61,10 @@ class Constructive:
     
     def corner_first_strategy(self, space: Space) -> Space:
         
-        space.setup(reach=self.reach)
+        if self.reach != None:
+            space.setup(reach=self.reach)
+        else:
+            space.setup_with_optimal_reach()
 
         target_size = self.n * 2 - 1
         for i in range(13, self.n):
