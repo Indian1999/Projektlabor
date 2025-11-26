@@ -128,6 +128,9 @@ class Genetic(CubeSolver):
         if fitness_mode != None:
             print("genetic.run(): fitness_mode is a deprecated parameter, the fitness mode is automaticly set to self.fitness_mode")
         fitness_mode = self.fitness_mode
+        for space in self.population:
+            space.setup(reach=self.reach)
+            # Eddig a space létrehozásánál csináltuk ezt, de kifagyasztja a gunicornt ha a kunstruktorban van.
         generation = 1
         self.running = True
         while self.running:

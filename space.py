@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 class Space:
     optimal_reaches = {}
 
-    def __init__(self, n:int, accuracy = 0, reach = None, do_setup = True):
+    def __init__(self, n:int, accuracy = 0, reach = None, do_setup = False):
         if n < 8:
             raise ValueError("There has to be at least 8 cubes!")
         self.n = n
@@ -16,6 +16,7 @@ class Space:
         self.delta = 10**-accuracy
         self.cubes = [Cube(i) for i in range(n, 0, -1)] # n méretű az első, mert azt fixáljuk
         # A második legnagyobb kockát a legnagyobb szemközti sarkához rakjuk
+        # do_setup most False alapból, mert problémát okoz ha a konstruktór sokáig fut production-ben
         if do_setup and reach != None:
             self.setup(reach=reach)
         elif do_setup:
@@ -59,6 +60,8 @@ class Space:
         return space
 
     def setup(self, reach = 1):
+        if reach == None:
+            reach = 1
         # A cruical points sorrendje egy egyenlet alapján lett meghatározva, AI által lett megkeresve az optimális sorrend, bővebb infoért: resources/egyenlet_megoldás.txt
         cruical_points = ["buffer", (1,1,1), (0,1,0), (1,0,0), (0,0,1), (1,1,0), (1,0,1), (0,1,1), (0, 1, 0.5), (0, 0.5, 1), (0.5, 0, 1), (1, 0, 0.5), (1, 0.5, 0), (0.5, 1, 0)] # 13 crucial points in total
         for i in range(1, min(len(cruical_points), self.n)):

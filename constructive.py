@@ -51,7 +51,8 @@ class Constructive:
         return score
     
     def corner_first_strategy(self, space: Space) -> Space:
-        # Note: az első 13 kocka a space setupnál már a kritikus pontokra kerül
+        
+        space.setup(reach=self.reach)
 
         target_size = self.n * 2 - 1
         for i in range(13, self.n):
