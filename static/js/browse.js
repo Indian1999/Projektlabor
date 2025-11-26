@@ -39,7 +39,7 @@ async function loadNValues() {
         
         nSelector.innerHTML = html;
     } catch (error) {
-        console.error('Error loading N values:', error);
+        console.error('Error in loadNValues():', error);
     }
 }
 

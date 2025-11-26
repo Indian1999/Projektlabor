@@ -7,6 +7,13 @@ class ServerApplication():
         self.results = []
         self.processes = []
         self.active_process_index = None
+        self.log_file = open("server_log.txt", "w", encoding="utf-8")
+        self.log_file.write("Server started\n")
+
+    def __del__(self):
+        """Destructor, closes the log file."""
+        self.log_file.write("Server stopped\n")
+        self.log_file.close()
 
     def add_process(self, process: Process, start_immediately: bool = False):
         process.on_terminate = self.on_terminate
@@ -16,6 +23,8 @@ class ServerApplication():
                 self.processes[self.active_process_index].pause()
             self.active_process_index = len(self.processes) - 1
             self.processes[self.active_process_index].resume()
+
+        self.log_file.write(f"Process {process.solver.get_params_string()} added, immedietly: {start_immediately}, priority: {process.priority}\n")
 
     def get_processes(self, format = None):
         """
@@ -44,6 +53,7 @@ class ServerApplication():
             self.processes[self.active_process_index].pause()
         self.active_process_index = index
         self.processes[self.active_process_index].resume()
+        self.log_file.write(f"Active process changed to {index} index.\n")
 
     def highest_priority_process_index(self):
         highest = 0
@@ -53,15 +63,20 @@ class ServerApplication():
         return highest
 
     def on_terminate(self, process: Process):
+        self.log_file.write(f"Process {process.solver.get_params_string()} terminated\n")
         self.results.extend(process.solver.results)
         self.processes.remove(process)
         if len(self.processes) != 0:
             self.active_process_index = self.highest_priority_process_index()
             self.processes[self.active_process_index].resume()
+            self.log_file.write(f"Active process changed to {self.active_process_index} index.\n")
         else:
             self.active_process_index = None
+            self.log_file.write("No active process.\n")
+
 
     def terminate_process(self, index: int):
+        self.log_file.write(f"Process {self.processes[index].solver.get_params_string()} terminated\n")
         self.processes[index].terminate()
 
     def get_best_space(self, n:int):
@@ -73,6 +88,7 @@ class ServerApplication():
         return best
 
     def load_results(self):
+        self.log_file.write("Loading results\n")
         results = os.listdir("results")
         for dir in results:
             spaces = os.listdir(os.path.join("results", dir, "spaces"))
@@ -81,3 +97,5 @@ class ServerApplication():
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     self.results.append(data)
+                self.log_file.write(f"Loaded space from {path}\n")
+        self.log_file.write(f"Loaded {len(self.results)} results in total\n")
