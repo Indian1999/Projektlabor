@@ -45,12 +45,11 @@ class Process:
         self.solver.resume()
         self.running = True
 
-    def terminate(self): 
+    def terminate(self):
         """Terminates the process"""
         self.solver.stop()
         self.running = False
         self.finished = True
-        self.file.close()
         self.on_terminate(self)
 
 
