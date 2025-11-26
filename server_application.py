@@ -8,13 +8,14 @@ class ServerApplication():
         self.results = []
         self.processes = []
         self.active_process_index = None
-        self.log_file = open("server_log.txt", "a", encoding="utf-8")
-        self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+" Server started\n")
+        self.log("Server started")
 
     def __del__(self):
-        """Destructor, closes the log file."""
-        self.log_file.write("Server stopped\n")
-        self.log_file.close()
+        self.log("Server stopped")
+
+    def log(self, message: str):
+        with open("server_log.txt", "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" {message}\n")
 
     def add_process(self, process: Process, start_immediately: bool = False):
         process.on_terminate = self.on_terminate
@@ -24,8 +25,7 @@ class ServerApplication():
                 self.processes[self.active_process_index].pause()
             self.active_process_index = len(self.processes) - 1
             self.processes[self.active_process_index].resume()
-
-        self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" Process {process.solver.get_params_string()} added, immedietly: {start_immediately}, priority: {process.priority}\n")
+        self.log(f"Process {process.solver.get_params_string()} added, immedietly: {start_immediately}, priority: {process.priority}")
 
     def get_processes(self, format = None):
         """
@@ -54,7 +54,7 @@ class ServerApplication():
             self.processes[self.active_process_index].pause()
         self.active_process_index = index
         self.processes[self.active_process_index].resume()
-        self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" Active process changed to {index} index.\n")
+        self.log(f" Active process changed to {index} index.")
 
     def highest_priority_process_index(self):
         highest = 0
@@ -64,16 +64,16 @@ class ServerApplication():
         return highest
 
     def on_terminate(self, process: Process):
-        self.log_file.write(f"Process {process.solver.get_params_string()} terminated\n")
+        self.log(f"Process {process.solver.get_params_string()} terminated")
         self.results.extend(process.solver.results)
         self.processes.remove(process)
         if len(self.processes) != 0:
             self.active_process_index = self.highest_priority_process_index()
             self.processes[self.active_process_index].resume()
-            self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" Active process changed to {self.active_process_index} index.\n")
+            self.log(f"Active process changed to {self.active_process_index} index.")
         else:
             self.active_process_index = None
-            self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+" No active process.\n")
+            self.log("No active process.")
 
 
     def terminate_process(self, index: int):
@@ -89,7 +89,7 @@ class ServerApplication():
         return best
 
     def load_results(self):
-        self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+" Loading results\n")
+        self.log("Loading results")
         results = os.listdir("results")
         for dir in results:
             spaces = os.listdir(os.path.join("results", dir, "spaces"))
@@ -98,5 +98,5 @@ class ServerApplication():
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     self.results.append(data)
-                self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" Loaded space from {path}\n")
-        self.log_file.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+f" Loaded {len(self.results)} results in total\n")
+                self.log(f" Loaded space from {path}")
+        self.log(f"Loaded {len(self.results)} results in total")
