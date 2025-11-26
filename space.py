@@ -2,6 +2,7 @@ import numpy as np
 from cube import Cube
 import random
 import json
+import time
 
 class Space:
     optimal_reaches = {}
@@ -136,6 +137,7 @@ class Space:
         root["n"] = self.n
         root["accuracy"] = self.accuracy
         root["cubes"] = []
+        root["date"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         for cube in self.cubes:
             cubeDict = {}
             cubeDict["size"] = cube.size

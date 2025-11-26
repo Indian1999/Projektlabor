@@ -83,9 +83,11 @@ function displayResults(results) {
                     <p class="card-text mb-1"><strong>N:</strong> ${result.n}</p>
                     <p class="card-text mb-1"><strong>Pontosság:</strong> ${result.accuracy}</p>
                     <p class="card-text mb-0"><strong>Kockák:</strong> ${result.cubes.length}</p>
+                ${result.date ? `<p class="card-text text-muted"><strong>Dátum:</strong> ${result.date}</p>` : ''}
                 </div>
             </div>
         `;
+        // A result.date egy újabb paraméter, a régieknér nincs, ezért feltételes a betöltése
     });
     
     container.innerHTML = html;
