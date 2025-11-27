@@ -8,3 +8,4 @@ output_logs/
 .env
 server_log.txt
 ppt_resources/
+resources/
