@@ -107,11 +107,13 @@ def api_get_all_results():
     """Get all results grouped by n"""
     results_by_n = {}
     for result in server_app.results:
-        # Az n értéket int-é konvertáljuk a konzisztens kezeléshez
-        n = int(result["n"])
-        if n not in results_by_n:
-            results_by_n[n] = []
-        results_by_n[n].append(result)
+        try:
+            n = int(result.get("n"))
+            if n not in results_by_n:
+                results_by_n[n] = []
+            results_by_n[n].append(result)
+        except (ValueError, TypeError):
+            continue
 
     for n in results_by_n:
         results_by_n[n].sort(key=lambda x: x["result"], reverse=True)
@@ -121,8 +123,13 @@ def api_get_all_results():
 @app.route("/api/results/<int:n>")
 def api_get_results_by_n(n):
     """Get all results for a specific n"""
-    # Az r["n"] lehet string vagy int, ezért int-é konvertáljuk hogy biztosan egyezzen az URL int paraméterrel
-    results = [r for r in server_app.results if int(r["n"]) == n]
+    results = []
+    for r in server_app.results:
+        try:
+            if int(r.get("n")) == n:
+                results.append(r)
+        except (ValueError, TypeError):
+            continue
     results.sort(key=lambda x: x["result"], reverse=True)
     return jsonify(results)
 
@@ -133,6 +140,23 @@ def api_get_best_result(n):
     if best:
         return jsonify(best)
     return jsonify({"error": "No results found"}), 404
+
+@app.route("/api/debug/results")
+def api_debug_results():
+    """Debug endpoint to see all results with their types"""
+    debug_data = []
+    for i, result in enumerate(server_app.results):
+        debug_data.append({
+            "index": i,
+            "n": result.get("n"),
+            "n_type": str(type(result.get("n")).__name__),
+            "result": result.get("result"),
+            "result_type": str(type(result.get("result")).__name__)
+        })
+    return jsonify({
+        "total_results": len(server_app.results),
+        "results": debug_data
+    })
 
 @app.route("/api/processes")
 @api_login_required

@@ -3,6 +3,7 @@ let cubes = [];
 let gridHelper;
 let currentData = null;
 let selectedN = null;
+let lastNValues = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     init3DViewer();
@@ -30,31 +31,55 @@ async function loadNValues() {
         if (nValues.length === 0) {
             nSelector.innerHTML = '<p class="placeholder">Nincsenek eredmények</p>';
             selectedN = null;
+            lastNValues = [];
             return;
         }
 
-        let html = '';
-        for (const n of nValues) {
-            const count = resultsByN[n].length;
-            const isSelected = selectedN === n ? 'btn-primary' : 'btn-outline-primary';
-            html += `
-                <button class="btn ${isSelected} w-100 n-btn" data-n="${n}">
-                    N = ${n} <span class="badge bg-secondary">${count}</span>
-                </button>
-            `;
+        const nValuesChanged = JSON.stringify(nValues) !== JSON.stringify(lastNValues);
+
+        if (nValuesChanged) {
+            let html = '';
+            for (const n of nValues) {
+                const count = resultsByN[n].length;
+                const isSelected = selectedN === n ? 'btn-primary' : 'btn-outline-primary';
+                html += `
+                    <button class="btn ${isSelected} w-100 n-btn" data-n="${n}">
+                        N = ${n} <span class="badge bg-secondary">${count}</span>
+                    </button>
+                `;
+            }
+
+            nSelector.innerHTML = html;
+
+            // eseménykezelő onClick helyett, mert új n érték esetén kibugoltatja az eredmények megjelenítését
+            document.querySelectorAll('.n-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectN(parseInt(this.getAttribute('data-n')));
+                });
+            });
+
+            lastNValues = nValues;
+        } else {
+            for (const n of nValues) {
+                const btn = document.querySelector(`[data-n="${n}"]`);
+                if (btn) {
+                    const isSelected = selectedN === n;
+                    if (isSelected) {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary');
+                    } else {
+                        btn.classList.add('btn-outline-primary');
+                        btn.classList.remove('btn-primary');
+                    }
+                    const count = resultsByN[n].length;
+                    btn.querySelector('.badge').textContent = count;
+                }
+            }
         }
 
-        nSelector.innerHTML = html;
-
-        // eseménykezelő onClick helyett, mert új n érték esetén kibugoltatja az eredmények megjelenítését
-        document.querySelectorAll('.n-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                selectN(parseInt(this.getAttribute('data-n')));
-            });
-        });
-
         if (selectedN !== null && nValues.includes(selectedN)) {
-            refreshSelectedResults();
+            // Itt lehet, hogy még nem fejeződött be a fetch, ugyhogy várunk
+            setTimeout(refreshSelectedResults, 100);
         }
     } catch (error) {
         console.error('Error in loadNValues():', error);
