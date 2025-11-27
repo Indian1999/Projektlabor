@@ -2,6 +2,7 @@ let scene, camera, renderer, controls;
 let cubes = [];
 let gridHelper;
 let currentData = null;
+let selectedN = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     init3DViewer();
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const nParam = urlParams.get('n');
     if (nParam) {
+        selectedN = parseInt(nParam);
         setTimeout(() => selectN(parseInt(nParam)), 500);
     }
 
@@ -21,48 +23,69 @@ async function loadNValues() {
     try {
         const response = await fetch('/api/results');
         const resultsByN = await response.json();
-        
+
         const nSelector = document.getElementById('nSelector');
         const nValues = Object.keys(resultsByN).map(Number).sort((a, b) => a - b);
-        
+
         if (nValues.length === 0) {
             nSelector.innerHTML = '<p class="placeholder">Nincsenek eredmények</p>';
+            selectedN = null;
             return;
         }
-        
+
         let html = '';
         for (const n of nValues) {
             const count = resultsByN[n].length;
+            const isSelected = selectedN === n ? 'btn-primary' : 'btn-outline-primary';
             html += `
-                <button class="btn btn-outline-primary w-100 n-btn" onclick="selectN(${n})">
+                <button class="btn ${isSelected} w-100 n-btn" data-n="${n}">
                     N = ${n} <span class="badge bg-secondary">${count}</span>
                 </button>
             `;
         }
-        
+
         nSelector.innerHTML = html;
+
+        // eseménykezelő onClick helyett, mert új n érték esetén kibugoltatja az eredmények megjelenítését
+        document.querySelectorAll('.n-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectN(parseInt(this.getAttribute('data-n')));
+            });
+        });
+
+        if (selectedN !== null && nValues.includes(selectedN)) {
+            refreshSelectedResults();
+        }
     } catch (error) {
         console.error('Error in loadNValues():', error);
     }
 }
 
 async function selectN(n) {
+    selectedN = n;
     document.getElementById('selectedN').textContent = n;
-    
+
     document.querySelectorAll('.n-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.classList.add('btn-outline-primary');
         btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
     });
-    
-    event.target?.classList.add('active');
-    event.target?.classList.remove('btn-outline-primary');
-    event.target?.classList.add('btn-primary');
-    
+
+    const selectedBtn = document.querySelector(`[data-n="${n}"]`);
+    if (selectedBtn) {
+        selectedBtn.classList.remove('btn-outline-primary');
+        selectedBtn.classList.add('btn-primary');
+    }
+
+    refreshSelectedResults();
+}
+
+async function refreshSelectedResults() {
+    if (selectedN === null) return;
+
     try {
-        const response = await fetch(`/api/results/${n}`);
+        const response = await fetch(`/api/results/${selectedN}`);
         const results = await response.json();
-        
+
         displayResults(results);
     } catch (error) {
         console.error('Error loading results:', error);
