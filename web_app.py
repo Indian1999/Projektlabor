@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect, url_for
+from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect, url_for, make_response
 from functools import wraps
 from server_application import ServerApplication
 from process import Process
@@ -101,6 +101,15 @@ def new_process():
 ##################################
 #         API végpontok          #
 ##################################
+
+@app.after_request
+def add_no_cache_headers(response):
+    # Az API végpontok ne cache-elődjenek, hogy mindig friss adatok legyenek
+    if request.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
 
 @app.route("/api/results")
 def api_get_all_results():
