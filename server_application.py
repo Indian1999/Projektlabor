@@ -20,6 +20,7 @@ class ServerApplication():
     def add_process(self, process: Process, start_immediately: bool = False):
         process.on_terminate = self.on_terminate
         self.processes.append(process)
+        process.start()
         if start_immediately:
             if self.active_process_index is not None:
                 self.processes[self.active_process_index].pause()

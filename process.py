@@ -15,6 +15,9 @@ class Process:
         #filename = "Process_" + self.solver.get_params_string() + ".txt"
         #self.path = os.path.join(self.path, "output_logs", filename)
         self.thread = threading.Thread(target=self.run_solver, daemon=True)
+        # A konstruktorból indítás problémás -> start() feladata legyen
+
+    def start(self):
         self.thread.start()
 
     def log(self, message: str):
