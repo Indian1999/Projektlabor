@@ -6,12 +6,15 @@ let currentData = null;
 document.addEventListener('DOMContentLoaded', function() {
     init3DViewer();
     loadNValues();
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     const nParam = urlParams.get('n');
     if (nParam) {
         setTimeout(() => selectN(parseInt(nParam)), 500);
     }
+
+    // Amúgy nem frissíteni a results lista új értékeivel
+    setInterval(loadNValues, 3000);
 });
 
 async function loadNValues() {
