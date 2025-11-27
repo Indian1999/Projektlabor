@@ -27,7 +27,7 @@ class ServerApplication():
             self.active_process_index = len(self.processes) - 1
             self.processes[self.active_process_index].resume()
         self.log(f"Process {process.solver.get_params_string()} added, immedietly: {start_immediately}, priority: {process.priority}, info: {process.get_log_info()}")
-
+        self.log(f"Contents of ServerApplication.processes: {self.processes}")
 
 
     def get_processes(self, format = None):

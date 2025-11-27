@@ -150,41 +150,6 @@ def api_get_best_result(n):
         return jsonify(best)
     return jsonify({"error": "No results found"}), 404
 
-@app.route("/api/debug/results")
-def api_debug_results():
-    """Debug endpoint to see all results with their types"""
-    debug_data = []
-    for i, result in enumerate(server_app.results):
-        debug_data.append({
-            "index": i,
-            "n": result.get("n"),
-            "n_type": str(type(result.get("n")).__name__),
-            "result": result.get("result"),
-            "result_type": str(type(result.get("result")).__name__)
-        })
-    return jsonify({
-        "total_results": len(server_app.results),
-        "results": debug_data
-    })
-
-@app.route("/api/debug/processes")
-def api_debug_processes():
-    """Debug endpoint to see process status"""
-    processes_data = []
-    for i, process in enumerate(server_app.processes):
-        processes_data.append({
-            "index": i,
-            "solver": process.solver.get_params_string(),
-            "running": process.running,
-            "finished": process.finished,
-            "solver_results_count": len(process.solver.results)
-        })
-    return jsonify({
-        "total_processes": len(server_app.processes),
-        "server_results": len(server_app.results),
-        "processes": processes_data
-    })
-
 @app.route("/api/processes")
 @api_login_required
 def api_get_processes():
@@ -215,9 +180,6 @@ def api_add_process():
             )
         elif solver_type == "constructive":
             iterations = data.get("iterations", 1)
-            if iterations < 1 or iterations > 10:
-                return jsonify({"error": "Az iterációk száma 1 és 10 között kell legyen!"}), 400
-
             solver = Constructive(
                 n=data["n"],
                 accuracy=data.get("accuracy", 0),
@@ -283,8 +245,6 @@ def api_get_stats():
             stats["best_by_n"][n] = best["result"]
     
     return jsonify(stats)
-
-
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
