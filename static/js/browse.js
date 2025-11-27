@@ -260,6 +260,62 @@ function render3D(data) {
         cubes.push(cube);
     });
     
+
+    let size = data.result;
+    const geometry = new THREE.BoxGeometry(size, size, size);
+    const material = new THREE.MeshPhongMaterial({
+        color: new THREE.Color().setHSL(0,0,0),
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+    });
+    const resultCube = new THREE.Mesh(geometry, material);
+    resultCube.position.set(
+            data.result / 2 - maxCoord / 2,
+            data.result / 2,
+            data.result / 2 - maxCoord / 2
+        );
+    resultCube.renderOrder = 1;
+
+    const edgeThickness = size * 0.02;
+    const halfSize = size / 2;
+    const edgePoints = [
+        // Alsó lap élei
+        [[-halfSize, -halfSize, -halfSize], [-halfSize, -halfSize, halfSize]],
+        [[-halfSize, -halfSize, halfSize], [halfSize, -halfSize, halfSize]],
+        [[halfSize, -halfSize, halfSize], [halfSize, -halfSize, -halfSize]],
+        [[halfSize, -halfSize, -halfSize], [-halfSize, -halfSize, -halfSize]],
+        // Felső lap élei
+        [[-halfSize, halfSize, -halfSize], [-halfSize, halfSize, halfSize]],
+        [[-halfSize, halfSize, halfSize], [halfSize, halfSize, halfSize]],
+        [[halfSize, halfSize, halfSize], [halfSize, halfSize, -halfSize]],
+        [[halfSize, halfSize, -halfSize], [-halfSize, halfSize, -halfSize]],
+        // Függőleges élek
+        [[-halfSize, -halfSize, -halfSize], [-halfSize, halfSize, -halfSize]],
+        [[-halfSize, -halfSize, halfSize], [-halfSize, halfSize, halfSize]],
+        [[halfSize, -halfSize, halfSize], [halfSize, halfSize, halfSize]],
+        [[halfSize, -halfSize, -halfSize], [halfSize, halfSize, -halfSize]]
+    ];
+
+    const edgeMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+    edgePoints.forEach(([start, end]) => {
+        const direction = new THREE.Vector3().fromArray(end).sub(new THREE.Vector3().fromArray(start));
+        const length = direction.length();
+        const tubeGeom = new THREE.CylinderGeometry(edgeThickness / 2, edgeThickness / 2, length, 8);
+        const tube = new THREE.Mesh(tubeGeom, edgeMaterial);
+
+        tube.position.copy(new THREE.Vector3().fromArray(start).add(direction.clone().multiplyScalar(0.5)));
+        tube.lookAt(new THREE.Vector3().fromArray(end));
+        tube.rotateX(Math.PI / 2);
+
+        resultCube.add(tube);
+    });
+    scene.add(resultCube);
+    cubes.push(resultCube);
+
     camera.position.set(maxCoord * 1.5, maxCoord * 1.5, maxCoord * 1.5);
     camera.lookAt(0, maxCoord / 2, 0);
 }
