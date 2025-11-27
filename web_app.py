@@ -158,6 +158,24 @@ def api_debug_results():
         "results": debug_data
     })
 
+@app.route("/api/debug/processes")
+def api_debug_processes():
+    """Debug endpoint to see process status"""
+    processes_data = []
+    for i, process in enumerate(server_app.processes):
+        processes_data.append({
+            "index": i,
+            "solver": process.solver.get_params_string(),
+            "running": process.running,
+            "finished": process.finished,
+            "solver_results_count": len(process.solver.results)
+        })
+    return jsonify({
+        "total_processes": len(server_app.processes),
+        "server_results": len(server_app.results),
+        "processes": processes_data
+    })
+
 @app.route("/api/processes")
 @api_login_required
 def api_get_processes():
