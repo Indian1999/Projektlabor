@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Amúgy nem frissíteni a results lista új értékeivel
-    setInterval(loadNValues, 3000);
+    // setInterval(loadNValues, 3000); Nice try, de nem jó ötlet, three.js-t is frissíti
 });
 
 async function loadNValues() {
