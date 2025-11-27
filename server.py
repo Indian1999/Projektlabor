@@ -5,6 +5,10 @@ from genetic import Genetic
 from typing import Optional
 from process import Process
 
+"""
+This runs the FastAPI server for the Unity app specifically.
+"""
+
 class GeneticProcessItem(BaseModel):
     n:int
     population_size:int

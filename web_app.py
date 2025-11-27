@@ -7,7 +7,6 @@ from constructive import Constructive
 import os
 import json
 import hashlib
-from datetime import timedelta
 from config import Config
 
 basedir = os.path.abspath(os.path.dirname(__file__))
