@@ -10,10 +10,10 @@ class Process:
         self.finished = False
         self.priority = priority
         self.on_terminate: function = lambda p: None
-        self.path = os.path.join(os.path.dirname(__file__))
-        os.makedirs(os.path.join(self.path, "output_logs"), exist_ok=True)
-        filename = "Process_" + self.solver.get_params_string() + ".txt"
-        self.path = os.path.join(self.path, "output_logs", filename)
+        self.path = os.path.join(os.path.dirname(__file__), "server_log.txt")
+        #os.makedirs(os.path.join(self.path, "output_logs"), exist_ok=True)
+        #filename = "Process_" + self.solver.get_params_string() + ".txt"
+        #self.path = os.path.join(self.path, "output_logs", filename)
         self.thread = threading.Thread(target=self.run_solver, daemon=True)
         self.thread.start()
 
