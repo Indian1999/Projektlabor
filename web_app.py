@@ -98,6 +98,12 @@ def new_process():
     """Create new process page"""
     return render_template("new_process.html")
 
+@app.route("/logs")
+@login_required
+def logs_page():
+    """View server logs"""
+    return render_template("logs.html")
+
 ##################################
 #         API végpontok          #
 ##################################
@@ -238,13 +244,29 @@ def api_get_stats():
         "n_values": list(set(r["n"] for r in server_app.results)),
         "best_by_n": {}
     }
-    
+
     for n in stats["n_values"]:
         best = server_app.get_best_space(n)
         if best:
             stats["best_by_n"][n] = best["result"]
-    
+
     return jsonify(stats)
+
+@app.route("/api/logs")
+@api_login_required
+def api_get_logs():
+    """Get server logs in reverse order (latest first)"""
+    log_file = os.path.join(basedir, "server_log.txt")
+    try:
+        with open(log_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        # Fordított sorrendben, az utolsó sor legelől
+        lines.reverse()
+        return jsonify({"logs": lines})
+    except FileNotFoundError:
+        return jsonify({"logs": [], "error": "Log file not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

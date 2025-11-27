@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Naplók - Cube Solver{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h1 class="mb-2">Server naplók</h1>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Log bejegyzések</h5>
+            <button onclick="refreshLogs()" class="btn btn-primary btn-sm">Frissítés</button>
+        </div>
+
+        <div id="logsContainer" class="logs-container">
+            <p class="text-muted">Naplók betöltése...</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+{% endblock %}
+
