@@ -107,20 +107,22 @@ def api_get_all_results():
     """Get all results grouped by n"""
     results_by_n = {}
     for result in server_app.results:
-        n = result["n"]
+        # Az n értéket int-é konvertáljuk a konzisztens kezeléshez
+        n = int(result["n"])
         if n not in results_by_n:
             results_by_n[n] = []
         results_by_n[n].append(result)
-    
+
     for n in results_by_n:
         results_by_n[n].sort(key=lambda x: x["result"], reverse=True)
-    
+
     return jsonify(results_by_n)
 
 @app.route("/api/results/<int:n>")
 def api_get_results_by_n(n):
     """Get all results for a specific n"""
-    results = [r for r in server_app.results if r["n"] == n]
+    # Az r["n"] lehet string vagy int, ezért int-é konvertáljuk hogy biztosan egyezzen az URL int paraméterrel
+    results = [r for r in server_app.results if int(r["n"]) == n]
     results.sort(key=lambda x: x["result"], reverse=True)
     return jsonify(results)
 
