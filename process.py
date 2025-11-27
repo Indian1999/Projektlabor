@@ -35,7 +35,9 @@ class Process:
     def run_solver(self):
         for msg in self.solver.run():
             self.log(msg)
+        self.log("Calling terminate() from run_solver()...")
         self.terminate()
+        self.log("terminate() completed in run_solver()")
 
     def pause(self):
         self.solver.pause()
@@ -47,10 +49,14 @@ class Process:
 
     def terminate(self):
         """Terminates the process"""
+        self.log("Process:terminate() started")
         self.solver.stop()
+        self.log("Process:terminate() - solver.stop() called")
         self.running = False
         self.finished = True
+        self.log(f"Process:terminate() - About to call on_terminate callback: {self.on_terminate}")
         self.on_terminate(self)
+        self.log("Process:terminate() - on_terminate callback completed")
 
 
 

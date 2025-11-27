@@ -66,8 +66,10 @@ class ServerApplication():
         return highest
 
     def on_terminate(self, process: Process):
-        self.log(f"Process {process.solver.get_params_string()} terminated")
+        self.log(f"ServerApplication:on_terminate() called for process {process.solver.get_params_string()}")
+        self.log(f"ServerApplication:on_terminate() - Adding {len(process.solver.results)} results to server results (total before: {len(self.results)})")
         self.results.extend(process.solver.results)
+        self.log(f"ServerApplication:on_terminate() - Total results after: {len(self.results)}")
         self.processes.remove(process)
         if len(self.processes) != 0:
             self.active_process_index = self.highest_priority_process_index()
